@@ -9,12 +9,17 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
 
-    <!-- Header Institucional -->
+    <!-- Header Institucional con Escudo y Código del Ministerio -->
     <header class="bg-slate-800 border-b border-slate-700 p-4 shadow-md">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <div>
-                <h1 class="text-lg font-bold text-amber-400">MPPD - Control de Gestión</h1>
-                <p class="text-xs text-slate-400">Sistema de Registro y Seguimiento de Pendientes</p>
+        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="flex items-center space-x-3 text-center sm:text-left">
+                <!-- Escudo Oficial del MPPD -->
+                <img src="escudo-mppd.png" alt="Escudo MPPD" class="w-12 h-12 object-contain" onerror="this.style.display='none'">
+                <div>
+                    <span class="text-xs font-bold tracking-wider text-amber-400 uppercase">República Bolivariana de Venezuela</span>
+                    <h1 class="text-sm font-extrabold text-slate-100">Ministerio del Poder Popular para la Defensa</h1>
+                    <p class="text-xs text-slate-400">Sistema de Control de Gestión y Documentos Pendientes</p>
+                </div>
             </div>
             <div id="user-info" class="hidden flex items-center space-x-3">
                 <span id="nav-username" class="text-sm font-medium text-slate-200"></span>
@@ -32,41 +37,52 @@
             <form id="login-form" onsubmit="manejarLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Usuario</label>
-                    <input type="text" id="username" required class="w-full bg-slate-900 border border-slate-750 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
+                    <input type="text" id="username" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
                 </div>
                 <div>
                     <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Contraseña</label>
-                    <input type="password" id="password" required class="w-full bg-slate-900 border border-slate-750 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
+                    <input type="password" id="password" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
                 </div>
                 <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2 rounded transition">Ingresar</button>
             </form>
-            <div class="mt-4 text-xs text-slate-400 text-center">
-                <p>Credenciales de prueba: <strong>jefe / 1234</strong> o <strong>prof / 1234</strong></p>
+            <div class="mt-4 text-xs text-slate-400 text-center space-y-1">
+                <p>Credenciales de acceso:</p>
+                <p><strong>jefe</strong> (Carga y Comenta) | <strong>prof</strong> (Solo Recepción/Carga)</p>
+                <p><strong>sup1</strong>, <strong>sup2</strong>, <strong>sup3</strong> (Visualización y Comentarios)</p>
             </div>
         </section>
 
         <!-- VISTA 2: PANEL DE CONTROL Y LISTA -->
         <section id="dashboard-section" class="hidden space-y-6">
             
-            <!-- Formulario de Registro (Solo visible para perfiles autorizados) -->
-            <div id="form-container" class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-lg">
+            <!-- Notificación de Actualizaciones para Superiores -->
+            <div id="notification-banner" class="hidden bg-amber-500/20 border border-amber-500/40 text-amber-300 p-3 rounded-lg text-sm flex items-center justify-between shadow-md">
+                <div class="flex items-center space-x-2">
+                    <span class="animate-pulse h-2.5 w-2.5 rounded-full bg-amber-400"></span>
+                    <span id="notification-text" class="font-semibold">Hay nuevos registros agregados en el sistema desde su última revisión.</span>
+                </div>
+                <button onclick="marcarVisto()" class="text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 px-2.5 py-1 rounded font-bold transition">Aceptar</button>
+            </div>
+
+            <!-- Formulario de Registro (SOLO visible para Jefe y Recepción) -->
+            <div id="form-container" class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-lg hidden">
                 <h3 class="text-md font-bold text-amber-400 mb-4">Registrar Nuevo Pendiente</h3>
                 <form id="doc-form" onsubmit="agregarDocumento(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs uppercase font-bold text-slate-400 mb-1">N° de Referencia / Documento</label>
-                        <input type="text" id="referencia" required class="w-full bg-slate-900 border border-slate-750 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
+                        <input type="text" id="referencia" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
                     </div>
                     <div>
                         <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Remitente</label>
-                        <input type="text" id="remitente" required class="w-full bg-slate-900 border border-slate-750 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
+                        <input type="text" id="remitente" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
                     </div>
                     <div>
                         <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Asignado a</label>
-                        <input type="text" id="asignado" required class="w-full bg-slate-900 border border-slate-750 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400" placeholder="Ej: Superior 1">
+                        <input type="text" id="asignado" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400" placeholder="Ej: Superior 1">
                     </div>
                     <div>
                         <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Observación / Asunto</label>
-                        <input type="text" id="observacion" required class="w-full bg-slate-900 border border-slate-750 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
+                        <input type="text" id="observacion" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
                     </div>
                     <div class="md:col-span-2">
                         <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2 rounded transition">Guardar en la Lista</button>
@@ -86,9 +102,9 @@
                             <tr class="bg-slate-900 text-slate-400 uppercase text-xs">
                                 <th class="p-3">Ref / Remitente</th>
                                 <th class="p-3">Asignado</th>
-                                <th class="p-3">Observación</th>
+                                <th class="p-3">Observación y Comentarios</th>
                                 <th class="p-3">Estado</th>
-                                <th class="p-3 text-center">Acción</th>
+                                <th class="p-3 text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="documents-table-body" class="divide-y divide-slate-700">
@@ -109,16 +125,18 @@
 
     <!-- Lógica de la Aplicación en JavaScript -->
     <script>
-        // Base de datos local en memoria del navegador (localStorage)
         let usuarios = [
             { username: 'jefe', password: '1234', role: 'jefe', name: 'Teniente (Jefe)' },
-            { username: 'prof', password: '1234', role: 'profesional', name: 'Asistente' }
+            { username: 'prof', password: '1234', role: 'profesional', name: 'Personal de Recepción' },
+            { username: 'sup1', password: '1234', role: 'superior', name: 'Superior 1' },
+            { username: 'sup2', password: '1234', role: 'superior', name: 'Superior 2' },
+            { username: 'sup3', password: '1234', role: 'superior', name: 'Superior 3' }
         ];
 
         let currentUser = JSON.parse(localStorage.getItem('mppd_user')) || null;
         let documentos = JSON.parse(localStorage.getItem('mppd_docs')) || [];
+        let ultimaRevision = JSON.parse(localStorage.getItem('mppd_ult_revision')) || {};
 
-        // Inicializar vista al cargar
         document.addEventListener('DOMContentLoaded', () => {
             if (currentUser) {
                 mostrarDashboard();
@@ -154,7 +172,36 @@
             document.getElementById('dashboard-section').classList.remove('hidden');
             document.getElementById('user-info').classList.remove('hidden');
             document.getElementById('nav-username').innerText = currentUser.name;
+
+            // Control de formulario de carga (Solo Jefe y Recepción)
+            const formContainer = document.getElementById('form-container');
+            if (currentUser.role === 'jefe' || currentUser.role === 'profesional') {
+                formContainer.classList.remove('hidden');
+            } else {
+                formContainer.classList.add('hidden');
+            }
+
+            verificarNotificaciones();
             renderizarDocumentos();
+        }
+
+        function verificarNotificaciones() {
+            if (currentUser.role === 'superior') {
+                const ultimaVez = ultimaRevision[currentUser.username] || 0;
+                const tieneNuevos = documentos.some(doc => doc.id > ultimaVez);
+                const banner = document.getElementById('notification-banner');
+                if (tieneNuevos && documentos.length > 0) {
+                    banner.classList.remove('hidden');
+                } else {
+                    banner.classList.add('hidden');
+                }
+            }
+        }
+
+        function marcarVisto() {
+            ultimaRevision[currentUser.username] = Date.now();
+            localStorage.setItem('mppd_ult_revision', JSON.stringify(ultimaRevision));
+            document.getElementById('notification-banner').classList.add('hidden');
         }
 
         function agregarDocumento(e) {
@@ -166,13 +213,33 @@
                 asignado: document.getElementById('asignado').value,
                 observacion: document.getElementById('observacion').value,
                 status: 'Pendiente',
-                fecha: new Date().toLocaleDateString()
+                fecha: new Date().toLocaleDateString(),
+                comentarios: []
             };
 
             documentos.unshift(nuevoDoc);
             localStorage.setItem('mppd_docs', JSON.stringify(documentos));
             document.getElementById('doc-form').reset();
             renderizarDocumentos();
+        }
+
+        function agregarComentario(id) {
+            const textoComentario = prompt('Ingrese su comentario u observación para este registro:');
+            if (textoComentario && textoComentario.trim() !== '') {
+                documentos = documentos.map(doc => {
+                    if (doc.id === id) {
+                        if (!doc.comentarios) doc.comentarios = [];
+                        doc.comentarios.push({
+                            autor: currentUser.name,
+                            texto: textoComentario.trim(),
+                            fecha: new Date().toLocaleString()
+                        });
+                    }
+                    return doc;
+                });
+                localStorage.setItem('mppd_docs', JSON.stringify(documentos));
+                renderizarDocumentos();
+            }
         }
 
         function cambiarEstado(id) {
@@ -207,22 +274,50 @@
             documentos.forEach(doc => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-750 transition";
+
+                // Renderizar observaciones y comentarios
+                let htmlComentarios = `<div class="text-xs text-slate-300 mt-1"><strong>Asunto:</strong> ${doc.observacion}</div>`;
+                if (doc.comentarios && doc.comentarios.length > 0) {
+                    htmlComentarios += `<div class="mt-2 space-y-1 border-t border-slate-700 pt-2">`;
+                    doc.comentarios.forEach(c => {
+                        htmlComentarios += `<div class="text-xs bg-slate-900/60 p-1.5 rounded border border-slate-700/50">
+                            <span class="text-amber-400 font-semibold">${c.autor}:</span> ${c.texto}
+                            <span class="text-[10px] text-slate-500 block">${c.fecha}</span>
+                        </div>`;
+                    });
+                    htmlComentarios += `</div>`;
+                }
+
+                // Botones de acción según el usuario logueado
+                let htmlAcciones = `<div class="flex items-center justify-center space-x-1.5 flex-wrap gap-1">`;
+                
+                // El Jefe y los Superiores (sup1, sup2, sup3) pueden comentar
+                if (currentUser.role === 'jefe' || currentUser.role === 'superior') {
+                    htmlAcciones += `<button onclick="agregarComentario(${doc.id})" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2 py-1 text-xs rounded transition">Comentar</button>`;
+                }
+
+                // Solo el Jefe y Recepción pueden cambiar estado o eliminar
+                if (currentUser.role === 'jefe' || currentUser.role === 'profesional') {
+                    htmlAcciones += `
+                        <button onclick="cambiarEstado(${doc.id})" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-1 text-xs rounded transition">Estado</button>
+                        <button onclick="eliminarDoc(${doc.id})" class="bg-red-900/40 hover:bg-red-900 text-red-300 px-2 py-1 text-xs rounded transition">X</button>
+                    `;
+                }
+                htmlAcciones += `</div>`;
+
                 tr.innerHTML = `
                     <td class="p-3">
                         <div class="font-bold text-slate-100">${doc.referencia}</div>
                         <div class="text-xs text-slate-400">Rem: ${doc.remitente}</div>
                     </td>
                     <td class="p-3 text-slate-300">${doc.asignado}</td>
-                    <td class="p-3 text-slate-300">${doc.observacion}</td>
+                    <td class="p-3">${htmlComentarios}</td>
                     <td class="p-3">
                         <span class="px-2 py-1 text-xs rounded font-semibold ${doc.status === 'Pendiente' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
                             ${doc.status}
                         </span>
                     </td>
-                    <td class="p-3 text-center space-x-2">
-                        <button onclick="cambiarEstado(${doc.id})" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-1 text-xs rounded transition">Estado</button>
-                        <button onclick="eliminarDoc(${doc.id})" class="bg-red-900/40 hover:bg-red-900 text-red-300 px-2 py-1 text-xs rounded transition">X</button>
-                    </td>
+                    <td class="p-3 text-center">${htmlAcciones}</td>
                 `;
                 tbody.appendChild(tr);
             });
