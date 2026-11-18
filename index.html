@@ -4,16 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Gestión - MPPD</title>
-    <!-- Tailwind CSS para un diseño moderno y responsivo -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
 
-    <!-- Header Institucional con Escudo y Código del Ministerio -->
+    <!-- Header Institucional con Escudo del Ministerio -->
     <header class="bg-slate-800 border-b border-slate-700 p-4 shadow-md">
         <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
             <div class="flex items-center space-x-3 text-center sm:text-left">
-                <!-- Escudo Oficial del MPPD -->
                 <img src="escudo-mppd.png" alt="Escudo MPPD" class="w-12 h-12 object-contain" onerror="this.style.display='none'">
                 <div>
                     <span class="text-xs font-bold tracking-wider text-amber-400 uppercase">República Bolivariana de Venezuela</span>
@@ -85,7 +84,7 @@
                         <input type="text" id="observacion" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
                     </div>
                     <div class="md:col-span-2">
-                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2 rounded transition">Guardar en la Lista</button>
+                        <button type="submit" id="btn-guardar" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2 rounded transition">Guardar en la Nube</button>
                     </div>
                 </form>
             </div>
@@ -93,8 +92,11 @@
             <!-- Tabla de Listado de Pendientes -->
             <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-lg overflow-hidden">
                 <div class="p-4 border-b border-slate-700 flex justify-between items-center">
-                    <h3 class="text-md font-bold text-slate-100">Bandeja de Documentos y Pendientes</h3>
-                    <span id="total-docs" class="text-xs bg-slate-700 px-2 py-1 rounded text-slate-300">0 registros</span>
+                    <div class="flex items-center space-x-2">
+                        <h3 class="text-md font-bold text-slate-100">Bandeja de Documentos y Pendientes</h3>
+                        <span class="h-2 w-2 rounded-full bg-emerald-400" title="Sincronizado en tiempo real"></span>
+                    </div>
+                    <span id="total-docs" class="text-xs bg-slate-700 px-2 py-1 rounded text-slate-300">Cargando...</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-sm">
@@ -108,7 +110,7 @@
                             </tr>
                         </thead>
                         <tbody id="documents-table-body" class="divide-y divide-slate-700">
-                            <!-- Los registros se cargan dinámicamente aquí -->
+                            <tr><td colspan="5" class="p-4 text-center text-slate-500">Conectando con la nube...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -123,9 +125,28 @@
         Ministerio del Poder Popular para la Defensa &copy; 2026
     </footer>
 
-    <!-- Lógica de la Aplicación en JavaScript -->
-    <script>
-        let usuarios = [
+    <!-- SDK de Firebase (Firestore en tiempo real) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Configuración del proyecto Firebase del Teniente
+        const firebaseConfig = {
+            apiKey: "AIzaSyAdooSNDsYBWgkJ5c92V6aXXi3oTc-gOsc",
+            authDomain: "control-gestion-direccion.firebaseapp.com",
+            projectId: "control-gestion-direccion",
+            storageBucket: "control-gestion-direccion.firebasestorage.app",
+            messagingSenderId: "1072471114079",
+            appId: "1:1072471114079:web:1e6a6166e8e65ab32ff6ea",
+            measurementId: "G-NFY5Z57CWT"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const docsRef = collection(db, "documentos_mppd");
+
+        // Usuarios del sistema
+        const usuarios = [
             { username: 'jefe', password: '1234', role: 'jefe', name: 'Teniente (Jefe)' },
             { username: 'prof', password: '1234', role: 'profesional', name: 'Personal de Recepción' },
             { username: 'sup1', password: '1234', role: 'superior', name: 'Superior 1' },
@@ -134,8 +155,9 @@
         ];
 
         let currentUser = JSON.parse(localStorage.getItem('mppd_user')) || null;
-        let documentos = JSON.parse(localStorage.getItem('mppd_docs')) || [];
+        let documentos = [];
         let ultimaRevision = JSON.parse(localStorage.getItem('mppd_ult_revision')) || {};
+        let unsubscribe = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             if (currentUser) {
@@ -143,7 +165,7 @@
             }
         });
 
-        function manejarLogin(e) {
+        window.manejarLogin = function(e) {
             e.preventDefault();
             const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value.trim();
@@ -156,16 +178,17 @@
             } else {
                 alert('Credenciales inválidas. Verifique usuario o contraseña.');
             }
-        }
+        };
 
-        function cerrarSesion() {
+        window.cerrarSesion = function() {
+            if (unsubscribe) unsubscribe();
             currentUser = null;
             localStorage.removeItem('mppd_user');
             document.getElementById('dashboard-section').classList.add('hidden');
             document.getElementById('user-info').classList.add('hidden');
             document.getElementById('login-section').classList.remove('hidden');
             document.getElementById('login-form').reset();
-        }
+        };
 
         function mostrarDashboard() {
             document.getElementById('login-section').classList.add('hidden');
@@ -173,7 +196,6 @@
             document.getElementById('user-info').classList.remove('hidden');
             document.getElementById('nav-username').innerText = currentUser.name;
 
-            // Control de formulario de carga (Solo Jefe y Recepción)
             const formContainer = document.getElementById('form-container');
             if (currentUser.role === 'jefe' || currentUser.role === 'profesional') {
                 formContainer.classList.remove('hidden');
@@ -181,14 +203,31 @@
                 formContainer.classList.add('hidden');
             }
 
-            verificarNotificaciones();
-            renderizarDocumentos();
+            escucharCambiosEnTiempoReal();
+        }
+
+        // Listener en tiempo real desde Firebase Firestore
+        function escucharCambiosEnTiempoReal() {
+            if (unsubscribe) unsubscribe();
+            const q = query(docsRef, orderBy("timestamp", "desc"));
+            
+            unsubscribe = onSnapshot(q, (snapshot) => {
+                documentos = [];
+                snapshot.forEach((docSnap) => {
+                    documentos.push({ firestoreId: docSnap.id, ...docSnap.data() });
+                });
+                verificarNotificaciones();
+                renderizarDocumentos();
+            }, (error) => {
+                console.error("Error conectando a Firestore:", error);
+                document.getElementById('total-docs').innerText = "Error de conexión";
+            });
         }
 
         function verificarNotificaciones() {
-            if (currentUser.role === 'superior') {
+            if (currentUser && currentUser.role === 'superior') {
                 const ultimaVez = ultimaRevision[currentUser.username] || 0;
-                const tieneNuevos = documentos.some(doc => doc.id > ultimaVez);
+                const tieneNuevos = documentos.some(doc => doc.timestamp > ultimaVez);
                 const banner = document.getElementById('notification-banner');
                 if (tieneNuevos && documentos.length > 0) {
                     banner.classList.remove('hidden');
@@ -198,68 +237,78 @@
             }
         }
 
-        function marcarVisto() {
+        window.marcarVisto = function() {
             ultimaRevision[currentUser.username] = Date.now();
             localStorage.setItem('mppd_ult_revision', JSON.stringify(ultimaRevision));
             document.getElementById('notification-banner').classList.add('hidden');
-        }
+        };
 
-        function agregarDocumento(e) {
+        window.agregarDocumento = async function(e) {
             e.preventDefault();
-            const nuevoDoc = {
-                id: Date.now(),
-                referencia: document.getElementById('referencia').value,
-                remitente: document.getElementById('remitente').value,
-                asignado: document.getElementById('asignado').value,
-                observacion: document.getElementById('observacion').value,
-                status: 'Pendiente',
-                fecha: new Date().toLocaleDateString(),
-                comentarios: []
-            };
+            const btn = document.getElementById('btn-guardar');
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
 
-            documentos.unshift(nuevoDoc);
-            localStorage.setItem('mppd_docs', JSON.stringify(documentos));
-            document.getElementById('doc-form').reset();
-            renderizarDocumentos();
-        }
+            try {
+                await addDoc(docsRef, {
+                    timestamp: Date.now(),
+                    referencia: document.getElementById('referencia').value,
+                    remitente: document.getElementById('remitente').value,
+                    asignado: document.getElementById('asignado').value,
+                    observacion: document.getElementById('observacion').value,
+                    status: 'Pendiente',
+                    fecha: new Date().toLocaleDateString(),
+                    comentarios: []
+                });
+                document.getElementById('doc-form').reset();
+            } catch (error) {
+                alert("Error al guardar en la nube. Verifique que Firestore esté habilitado en modo de prueba.");
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Guardar en la Nube";
+            }
+        };
 
-        function agregarComentario(id) {
+        window.agregarComentario = async function(firestoreId) {
             const textoComentario = prompt('Ingrese su comentario u observación para este registro:');
             if (textoComentario && textoComentario.trim() !== '') {
-                documentos = documentos.map(doc => {
-                    if (doc.id === id) {
-                        if (!doc.comentarios) doc.comentarios = [];
-                        doc.comentarios.push({
+                try {
+                    const docRef = doc(db, "documentos_mppd", firestoreId);
+                    await updateDoc(docRef, {
+                        comentarios: arrayUnion({
                             autor: currentUser.name,
                             texto: textoComentario.trim(),
                             fecha: new Date().toLocaleString()
-                        });
-                    }
-                    return doc;
-                });
-                localStorage.setItem('mppd_docs', JSON.stringify(documentos));
-                renderizarDocumentos();
-            }
-        }
-
-        function cambiarEstado(id) {
-            documentos = documentos.map(doc => {
-                if (doc.id === id) {
-                    doc.status = doc.status === 'Pendiente' ? 'Atendido' : 'Pendiente';
+                        })
+                    });
+                } catch (error) {
+                    alert("No se pudo guardar el comentario.");
+                    console.error(error);
                 }
-                return doc;
-            });
-            localStorage.setItem('mppd_docs', JSON.stringify(documentos));
-            renderizarDocumentos();
-        }
-
-        function eliminarDoc(id) {
-            if (confirm('¿Desea eliminar este registro de la lista?')) {
-                documentos = documentos.filter(doc => doc.id !== id);
-                localStorage.setItem('mppd_docs', JSON.stringify(documentos));
-                renderizarDocumentos();
             }
-        }
+        };
+
+        window.cambiarEstado = async function(firestoreId, estadoActual) {
+            try {
+                const docRef = doc(db, "documentos_mppd", firestoreId);
+                await updateDoc(docRef, {
+                    status: estadoActual === 'Pendiente' ? 'Atendido' : 'Pendiente'
+                });
+            } catch (error) {
+                console.error("Error al actualizar estado:", error);
+            }
+        };
+
+        window.eliminarDoc = async function(firestoreId) {
+            if (confirm('¿Desea eliminar este registro de la nube de forma permanente?')) {
+                try {
+                    await deleteDoc(doc(db, "documentos_mppd", firestoreId));
+                } catch (error) {
+                    console.error("Error al eliminar:", error);
+                }
+            }
+        };
 
         function renderizarDocumentos() {
             const tbody = document.getElementById('documents-table-body');
@@ -267,7 +316,7 @@
             document.getElementById('total-docs').innerText = `${documentos.length} registros`;
 
             if (documentos.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay documentos registrados actualmente.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay documentos registrados actualmente en la nube.</td></tr>`;
                 return;
             }
 
@@ -275,7 +324,6 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-750 transition";
 
-                // Renderizar observaciones y comentarios
                 let htmlComentarios = `<div class="text-xs text-slate-300 mt-1"><strong>Asunto:</strong> ${doc.observacion}</div>`;
                 if (doc.comentarios && doc.comentarios.length > 0) {
                     htmlComentarios += `<div class="mt-2 space-y-1 border-t border-slate-700 pt-2">`;
@@ -288,19 +336,16 @@
                     htmlComentarios += `</div>`;
                 }
 
-                // Botones de acción según el usuario logueado
                 let htmlAcciones = `<div class="flex items-center justify-center space-x-1.5 flex-wrap gap-1">`;
                 
-                // El Jefe y los Superiores (sup1, sup2, sup3) pueden comentar
                 if (currentUser.role === 'jefe' || currentUser.role === 'superior') {
-                    htmlAcciones += `<button onclick="agregarComentario(${doc.id})" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2 py-1 text-xs rounded transition">Comentar</button>`;
+                    htmlAcciones += `<button onclick="agregarComentario('${doc.firestoreId}')" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2 py-1 text-xs rounded transition">Comentar</button>`;
                 }
 
-                // Solo el Jefe y Recepción pueden cambiar estado o eliminar
                 if (currentUser.role === 'jefe' || currentUser.role === 'profesional') {
                     htmlAcciones += `
-                        <button onclick="cambiarEstado(${doc.id})" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-1 text-xs rounded transition">Estado</button>
-                        <button onclick="eliminarDoc(${doc.id})" class="bg-red-900/40 hover:bg-red-900 text-red-300 px-2 py-1 text-xs rounded transition">X</button>
+                        <button onclick="cambiarEstado('${doc.firestoreId}', '${doc.status}')" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-1 text-xs rounded transition">Estado</button>
+                        <button onclick="eliminarDoc('${doc.firestoreId}')" class="bg-red-900/40 hover:bg-red-900 text-red-300 px-2 py-1 text-xs rounded transition">X</button>
                     `;
                 }
                 htmlAcciones += `</div>`;
