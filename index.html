@@ -6,12 +6,31 @@
     <title>Control de Gestión - MPPD</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            #print-report {
+                display: block !important;
+                color: #000000 !important;
+                background: #ffffff !important;
+            }
+        }
+        #print-report {
+            display: none;
+        }
+    </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
 
     <!-- Header Institucional con Escudo del Ministerio -->
-    <header class="bg-slate-800 border-b border-slate-700 p-4 shadow-md">
-        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+    <header class="bg-slate-800 border-b border-slate-700 p-4 shadow-md no-print">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
             <div class="flex items-center space-x-3 text-center sm:text-left">
                 <img src="escudo-mppd.png" alt="Escudo MPPD" class="w-12 h-12 object-contain" onerror="this.style.display='none'">
                 <div>
@@ -28,7 +47,7 @@
     </header>
 
     <!-- Contenido Principal -->
-    <main class="max-w-4xl w-full mx-auto p-4 flex-grow">
+    <main class="max-w-5xl w-full mx-auto p-4 flex-grow no-print">
 
         <!-- VISTA 1: LOGIN -->
         <section id="login-section" class="max-w-md mx-auto bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl mt-10">
@@ -51,8 +70,8 @@
             </div>
         </section>
 
-        <!-- VISTA 2: PANEL DE CONTROL Y LISTA -->
-        <section id="dashboard-section" class="hidden space-y-6">
+        <!-- VISTA 2: PANEL DE CONTROL Y PESTAÑAS -->
+        <section id="dashboard-section" class="hidden space-y-5">
             
             <!-- Notificación de Actualizaciones para Superiores -->
             <div id="notification-banner" class="hidden bg-amber-500/20 border border-amber-500/40 text-amber-300 p-3 rounded-lg text-sm flex items-center justify-between shadow-md">
@@ -63,24 +82,47 @@
                 <button onclick="marcarVisto()" class="text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 px-2.5 py-1 rounded font-bold transition">Aceptar</button>
             </div>
 
+            <!-- NAVEGACIÓN POR PESTAÑAS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 bg-slate-800/80 p-2 rounded-xl border border-slate-700">
+                <button onclick="cambiarPestana('enviar_mppd')" id="tab-enviar_mppd" class="tab-btn flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold transition text-left">
+                    <span>Enviar al MPPD</span>
+                    <span id="count-enviar_mppd" class="ml-2 px-2 py-0.5 rounded-full text-[11px] bg-slate-900/70">0</span>
+                </button>
+                <button onclick="cambiarPestana('decision_mppd')" id="tab-decision_mppd" class="tab-btn flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold transition text-left">
+                    <span>Para decisión del MPPD</span>
+                    <span id="count-decision_mppd" class="ml-2 px-2 py-0.5 rounded-full text-[11px] bg-slate-900/70">0</span>
+                </button>
+                <button onclick="cambiarPestana('invitaciones_exterior')" id="tab-invitaciones_exterior" class="tab-btn flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold transition text-left">
+                    <span>Invitaciones al exterior</span>
+                    <span id="count-invitaciones_exterior" class="ml-2 px-2 py-0.5 rounded-full text-[11px] bg-slate-900/70">0</span>
+                </button>
+                <button onclick="cambiarPestana('conocimiento_fines')" id="tab-conocimiento_fines" class="tab-btn flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold transition text-left">
+                    <span>Para conocimiento y fines</span>
+                    <span id="count-conocimiento_fines" class="ml-2 px-2 py-0.5 rounded-full text-[11px] bg-slate-900/70">0</span>
+                </button>
+            </div>
+
             <!-- Formulario de Registro (SOLO visible para Jefe y Recepción) -->
             <div id="form-container" class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-lg hidden">
-                <h3 class="text-md font-bold text-amber-400 mb-4">Registrar Nuevo Pendiente</h3>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-1">
+                    <h3 class="text-md font-bold text-amber-400">Nuevo Registro en: <span id="form-categoria-titulo" class="underline text-slate-100">Enviar al MPPD</span></h3>
+                    <span class="text-[11px] text-slate-400">Se guardará directamente en la pestaña activa</span>
+                </div>
                 <form id="doc-form" onsubmit="agregarDocumento(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">N° de Referencia / Documento</label>
-                        <input type="text" id="referencia" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
-                    </div>
                     <div>
                         <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Remitente</label>
                         <input type="text" id="remitente" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
                     </div>
                     <div>
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Asignado a</label>
-                        <input type="text" id="asignado" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400" placeholder="Ej: Superior 1">
+                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Contenido</label>
+                        <input type="text" id="contenido" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
                     </div>
                     <div>
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Observación / Asunto</label>
+                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Fecha (Ej: 19/11/2026)</label>
+                        <input type="text" id="fecha" required placeholder="DD/MM/AAAA" maxlength="10" oninput="formatearInputFecha(this)" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Observación</label>
                         <input type="text" id="observacion" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
                     </div>
                     <div class="md:col-span-2">
@@ -89,11 +131,11 @@
                 </form>
             </div>
 
-            <!-- Tabla de Listado de Pendientes -->
+            <!-- Tabla de Listado de Registros por Pestaña -->
             <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-lg overflow-hidden">
                 <div class="p-4 border-b border-slate-700 flex justify-between items-center">
                     <div class="flex items-center space-x-2">
-                        <h3 class="text-md font-bold text-slate-100">Bandeja de Documentos y Pendientes</h3>
+                        <h3 id="tabla-categoria-titulo" class="text-md font-bold text-slate-100">Enviar al MPPD</h3>
                         <span class="h-2 w-2 rounded-full bg-emerald-400" title="Sincronizado en tiempo real"></span>
                     </div>
                     <span id="total-docs" class="text-xs bg-slate-700 px-2 py-1 rounded text-slate-300">Cargando...</span>
@@ -102,10 +144,10 @@
                     <table class="w-full text-left border-collapse text-sm">
                         <thead>
                             <tr class="bg-slate-900 text-slate-400 uppercase text-xs">
-                                <th class="p-3">Ref / Remitente</th>
-                                <th class="p-3">Asignado</th>
-                                <th class="p-3">Observación y Comentarios</th>
-                                <th class="p-3">Estado</th>
+                                <th class="p-3">Remitente</th>
+                                <th class="p-3">Contenido</th>
+                                <th class="p-3">Fecha</th>
+                                <th class="p-3">Observación</th>
                                 <th class="p-3 text-center">Acciones</th>
                             </tr>
                         </thead>
@@ -114,14 +156,41 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Barra de Exportación al final de la lista (Visible para todos los usuarios) -->
+                <div class="p-4 bg-slate-900/70 border-t border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <span class="text-xs text-slate-400">Exportar desglose completo de las 4 pestañas:</span>
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <button onclick="copiarTodoTexto()" id="btn-copiar" class="flex-1 sm:flex-initial bg-slate-700 hover:bg-slate-600 text-slate-100 border border-slate-600 px-4 py-2 rounded-lg text-xs font-bold transition">
+                            Copiar Todo
+                        </button>
+                        <button onclick="generarPDF()" class="flex-1 sm:flex-initial bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2 rounded-lg text-xs font-bold transition">
+                            Generar PDF
+                        </button>
+                    </div>
+                </div>
             </div>
 
         </section>
 
     </main>
 
+    <!-- Vista exclusiva para impresión / guardado en PDF con todas las pestañas desglosadas -->
+    <div id="print-report" class="p-6 max-w-4xl mx-auto">
+        <div style="display:flex; align-items:center; gap:14px; border-bottom:2px solid #1e293b; padding-bottom:12px; margin-bottom:18px;">
+            <img src="escudo-mppd.png" alt="Escudo MPPD" style="width:52px; height:52px; object-fit:contain;" onerror="this.style.display='none'">
+            <div>
+                <div style="font-size:11px; font-weight:700; text-transform:uppercase;">República Bolivariana de Venezuela</div>
+                <div style="font-size:15px; font-weight:800;">Ministerio del Poder Popular para la Defensa</div>
+                <div style="font-size:12px; color:#334155;">Control de Gestión — Desglose General por Pestañas</div>
+                <div id="print-fecha-generacion" style="font-size:11px; color:#475569; margin-top:2px;"></div>
+            </div>
+        </div>
+        <div id="print-contenido-pestanas"></div>
+    </div>
+
     <!-- Footer -->
-    <footer class="text-center p-4 text-xs text-slate-500 border-t border-slate-800">
+    <footer class="text-center p-4 text-xs text-slate-500 border-t border-slate-800 no-print">
         Ministerio del Poder Popular para la Defensa &copy; 2026
     </footer>
 
@@ -130,7 +199,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Configuración del proyecto Firebase del Teniente
         const firebaseConfig = {
             apiKey: "AIzaSyAdooSNDsYBWgkJ5c92V6aXXi3oTc-gOsc",
             authDomain: "control-gestion-direccion.firebaseapp.com",
@@ -145,7 +213,6 @@
         const db = getFirestore(app);
         const docsRef = collection(db, "documentos_mppd");
 
-        // Usuarios del sistema
         const usuarios = [
             { username: 'jefe', password: '1234', role: 'jefe', name: 'Teniente (Jefe)' },
             { username: 'prof', password: '1234', role: 'profesional', name: 'Personal de Recepción' },
@@ -154,16 +221,47 @@
             { username: 'sup3', password: '1234', role: 'superior', name: 'Superior 3' }
         ];
 
+        const NOMBRES_CATEGORIAS = {
+            'enviar_mppd': 'Enviar al MPPD',
+            'decision_mppd': 'Para decisión del MPPD',
+            'invitaciones_exterior': 'Invitaciones al exterior',
+            'conocimiento_fines': 'Para conocimiento y fines'
+        };
+
+        let pestanaActual = 'enviar_mppd';
         let currentUser = JSON.parse(localStorage.getItem('mppd_user')) || null;
         let documentos = [];
         let ultimaRevision = JSON.parse(localStorage.getItem('mppd_ult_revision')) || {};
         let unsubscribe = null;
 
         document.addEventListener('DOMContentLoaded', () => {
+            actualizarEstilosPestanas();
             if (currentUser) {
                 mostrarDashboard();
             }
         });
+
+        window.cambiarPestana = function(categoria) {
+            pestanaActual = categoria;
+            actualizarEstilosPestanas();
+            renderizarDocumentos();
+        };
+
+        function actualizarEstilosPestanas() {
+            const categorias = Object.keys(NOMBRES_CATEGORIAS);
+            categorias.forEach(cat => {
+                const btn = document.getElementById(`tab-${cat}`);
+                if (cat === pestanaActual) {
+                    btn.className = "tab-btn flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold transition text-left bg-amber-500 text-slate-950 shadow-md";
+                } else {
+                    btn.className = "tab-btn flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold transition text-left bg-slate-900/60 text-slate-300 hover:bg-slate-700";
+                }
+            });
+
+            const titulo = NOMBRES_CATEGORIAS[pestanaActual];
+            document.getElementById('form-categoria-titulo').innerText = titulo;
+            document.getElementById('tabla-categoria-titulo').innerText = titulo;
+        }
 
         window.manejarLogin = function(e) {
             e.preventDefault();
@@ -203,10 +301,10 @@
                 formContainer.classList.add('hidden');
             }
 
+            actualizarEstilosPestanas();
             escucharCambiosEnTiempoReal();
         }
 
-        // Listener en tiempo real desde Firebase Firestore
         function escucharCambiosEnTiempoReal() {
             if (unsubscribe) unsubscribe();
             const q = query(docsRef, orderBy("timestamp", "desc"));
@@ -216,11 +314,33 @@
                 snapshot.forEach((docSnap) => {
                     documentos.push({ firestoreId: docSnap.id, ...docSnap.data() });
                 });
+                actualizarContadoresPestanas();
                 verificarNotificaciones();
                 renderizarDocumentos();
             }, (error) => {
                 console.error("Error conectando a Firestore:", error);
                 document.getElementById('total-docs').innerText = "Error de conexión";
+            });
+        }
+
+        function actualizarContadoresPestanas() {
+            const conteos = {
+                'enviar_mppd': 0,
+                'decision_mppd': 0,
+                'invitaciones_exterior': 0,
+                'conocimiento_fines': 0
+            };
+
+            documentos.forEach(doc => {
+                const cat = doc.categoria || 'enviar_mppd';
+                if (conteos.hasOwnProperty(cat)) {
+                    conteos[cat]++;
+                }
+            });
+
+            Object.keys(conteos).forEach(cat => {
+                const badge = document.getElementById(`count-${cat}`);
+                if (badge) badge.innerText = conteos[cat];
             });
         }
 
@@ -243,26 +363,38 @@
             document.getElementById('notification-banner').classList.add('hidden');
         };
 
+        // Máscara estricta para DD/MM/AAAA
+        window.formatearInputFecha = function(input) {
+            let v = input.value.replace(/\D/g, '');
+            if (v.length > 2 && v.length <= 4) {
+                v = v.slice(0, 2) + '/' + v.slice(2);
+            } else if (v.length > 4) {
+                v = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4, 8);
+            }
+            input.value = v;
+        };
+
         window.agregarDocumento = async function(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-guardar');
             btn.disabled = true;
             btn.innerText = "Guardando...";
 
+            const fechaTexto = document.getElementById('fecha').value;
+
             try {
                 await addDoc(docsRef, {
                     timestamp: Date.now(),
-                    referencia: document.getElementById('referencia').value,
+                    categoria: pestanaActual,
                     remitente: document.getElementById('remitente').value,
-                    asignado: document.getElementById('asignado').value,
+                    contenido: document.getElementById('contenido').value,
+                    fecha: fechaTexto,
                     observacion: document.getElementById('observacion').value,
-                    status: 'Pendiente',
-                    fecha: new Date().toLocaleDateString(),
                     comentarios: []
                 });
                 document.getElementById('doc-form').reset();
             } catch (error) {
-                alert("Error al guardar en la nube. Verifique que Firestore esté habilitado en modo de prueba.");
+                alert("Error al guardar en la nube.");
                 console.error(error);
             } finally {
                 btn.disabled = false;
@@ -289,17 +421,6 @@
             }
         };
 
-        window.cambiarEstado = async function(firestoreId, estadoActual) {
-            try {
-                const docRef = doc(db, "documentos_mppd", firestoreId);
-                await updateDoc(docRef, {
-                    status: estadoActual === 'Pendiente' ? 'Atendido' : 'Pendiente'
-                });
-            } catch (error) {
-                console.error("Error al actualizar estado:", error);
-            }
-        };
-
         window.eliminarDoc = async function(firestoreId) {
             if (confirm('¿Desea eliminar este registro de la nube de forma permanente?')) {
                 try {
@@ -310,21 +431,132 @@
             }
         };
 
+        function construirTextoDesglosado() {
+            const fechaActual = new Date().toLocaleString();
+            let lineas = [
+                `CONTROL DE GESTIÓN - MPPD`,
+                `Fecha de reporte: ${fechaActual}`,
+                `========================================`
+            ];
+
+            Object.entries(NOMBRES_CATEGORIAS).forEach(([clave, titulo]) => {
+                const items = documentos.filter(d => (d.categoria || 'enviar_mppd') === clave);
+                lineas.push(`\n📁 ${titulo.toUpperCase()} (${items.length})`);
+                lineas.push(`----------------------------------------`);
+
+                if (items.length === 0) {
+                    lineas.push(`Sin registros.`);
+                } else {
+                    items.forEach((doc, idx) => {
+                        lineas.push(`${idx + 1}. Remitente: ${doc.remitente}`);
+                        lineas.push(`   Contenido: ${doc.contenido}`);
+                        lineas.push(`   Fecha: ${doc.fecha}`);
+                        lineas.push(`   Observación: ${doc.observacion || ''}`);
+                        if (doc.comentarios && doc.comentarios.length > 0) {
+                            doc.comentarios.forEach(c => {
+                                lineas.push(`   • Comentario (${c.autor}): ${c.texto}`);
+                            });
+                        }
+                    });
+                }
+            });
+
+            return lineas.join('\n');
+        }
+
+        window.copiarTodoTexto = async function() {
+            const texto = construirTextoDesglosado();
+            const btn = document.getElementById('btn-copiar');
+            try {
+                await navigator.clipboard.writeText(texto);
+                const textoOriginal = btn.innerText;
+                btn.innerText = "¡Copiado!";
+                setTimeout(() => { btn.innerText = textoOriginal; }, 2000);
+            } catch (err) {
+                const textarea = document.createElement('textarea');
+                textarea.value = texto;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert("Información de las 4 pestañas copiada al portapapeles.");
+            }
+        };
+
+        window.generarPDF = function() {
+            document.getElementById('print-fecha-generacion').innerText = `Generado el: ${new Date().toLocaleString()}`;
+            const contenedor = document.getElementById('print-contenido-pestanas');
+            let html = '';
+
+            Object.entries(NOMBRES_CATEGORIAS).forEach(([clave, titulo]) => {
+                const items = documentos.filter(d => (d.categoria || 'enviar_mppd') === clave);
+                html += `
+                    <div style="margin-bottom:22px; page-break-inside:avoid;">
+                        <h3 style="font-size:13px; font-weight:800; background:#f1f5f9; color:#0f172a; padding:6px 10px; border-left:4px solid #d97706; margin-bottom:8px;">
+                            ${titulo} (${items.length})
+                        </h3>
+                `;
+
+                if (items.length === 0) {
+                    html += `<p style="font-size:12px; color:#64748b; padding-left:8px;">No hay registros en esta pestaña.</p>`;
+                } else {
+                    html += `
+                        <table style="width:100%; border-collapse:collapse; font-size:11px;">
+                            <thead>
+                                <tr style="background:#e2e8f0; color:#0f172a; text-align:left;">
+                                    <th style="border:1px solid #cbd5e1; padding:6px;">Remitente</th>
+                                    <th style="border:1px solid #cbd5e1; padding:6px;">Contenido</th>
+                                    <th style="border:1px solid #cbd5e1; padding:6px;">Fecha</th>
+                                    <th style="border:1px solid #cbd5e1; padding:6px;">Observación y Comentarios</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    items.forEach(doc => {
+                        let obsHtml = `<div>${doc.observacion || ''}</div>`;
+                        if (doc.comentarios && doc.comentarios.length > 0) {
+                            doc.comentarios.forEach(c => {
+                                obsHtml += `<div style="margin-top:4px; padding-top:4px; border-top:1px dashed #cbd5e1; font-size:10px; color:#334155;">
+                                    <strong>${c.autor}:</strong> ${c.texto} (${c.fecha})
+                                </div>`;
+                            });
+                        }
+                        html += `
+                            <tr>
+                                <td style="border:1px solid #cbd5e1; padding:6px; font-weight:700;">${doc.remitente}</td>
+                                <td style="border:1px solid #cbd5e1; padding:6px;">${doc.contenido}</td>
+                                <td style="border:1px solid #cbd5e1; padding:6px; white-space:nowrap;">${doc.fecha}</td>
+                                <td style="border:1px solid #cbd5e1; padding:6px;">${obsHtml}</td>
+                            </tr>
+                        `;
+                    });
+                    html += `</tbody></table>`;
+                }
+
+                html += `</div>`;
+            });
+
+            contenedor.innerHTML = html;
+            window.print();
+        };
+
         function renderizarDocumentos() {
             const tbody = document.getElementById('documents-table-body');
             tbody.innerHTML = '';
-            document.getElementById('total-docs').innerText = `${documentos.length} registros`;
 
-            if (documentos.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay documentos registrados actualmente en la nube.</td></tr>`;
+            const docsFiltrados = documentos.filter(doc => (doc.categoria || 'enviar_mppd') === pestanaActual);
+            document.getElementById('total-docs').innerText = `${docsFiltrados.length} registros`;
+
+            if (docsFiltrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">No hay registros en "${NOMBRES_CATEGORIAS[pestanaActual]}".</td></tr>`;
                 return;
             }
 
-            documentos.forEach(doc => {
+            docsFiltrados.forEach(doc => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-750 transition";
 
-                let htmlComentarios = `<div class="text-xs text-slate-300 mt-1"><strong>Asunto:</strong> ${doc.observacion}</div>`;
+                let htmlComentarios = `<div class="text-xs text-slate-300">${doc.observacion || ''}</div>`;
                 if (doc.comentarios && doc.comentarios.length > 0) {
                     htmlComentarios += `<div class="mt-2 space-y-1 border-t border-slate-700 pt-2">`;
                     doc.comentarios.forEach(c => {
@@ -344,24 +576,16 @@
 
                 if (currentUser.role === 'jefe' || currentUser.role === 'profesional') {
                     htmlAcciones += `
-                        <button onclick="cambiarEstado('${doc.firestoreId}', '${doc.status}')" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-1 text-xs rounded transition">Estado</button>
                         <button onclick="eliminarDoc('${doc.firestoreId}')" class="bg-red-900/40 hover:bg-red-900 text-red-300 px-2 py-1 text-xs rounded transition">X</button>
                     `;
                 }
                 htmlAcciones += `</div>`;
 
                 tr.innerHTML = `
-                    <td class="p-3">
-                        <div class="font-bold text-slate-100">${doc.referencia}</div>
-                        <div class="text-xs text-slate-400">Rem: ${doc.remitente}</div>
-                    </td>
-                    <td class="p-3 text-slate-300">${doc.asignado}</td>
+                    <td class="p-3 font-bold text-slate-100">${doc.remitente}</td>
+                    <td class="p-3 text-slate-300">${doc.contenido}</td>
+                    <td class="p-3 text-slate-300 whitespace-nowrap">${doc.fecha}</td>
                     <td class="p-3">${htmlComentarios}</td>
-                    <td class="p-3">
-                        <span class="px-2 py-1 text-xs rounded font-semibold ${doc.status === 'Pendiente' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
-                            ${doc.status}
-                        </span>
-                    </td>
                     <td class="p-3 text-center">${htmlAcciones}</td>
                 `;
                 tbody.appendChild(tr);
