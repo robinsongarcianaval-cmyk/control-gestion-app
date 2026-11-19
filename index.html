@@ -139,13 +139,33 @@
 
             <!-- Tabla de Listado de Registros por Pestaña -->
             <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-lg overflow-hidden">
-                <div class="p-4 border-b border-slate-700 flex justify-between items-center">
-                    <div class="flex items-center space-x-2">
-                        <h3 id="tabla-categoria-titulo" class="text-md font-bold text-slate-100">Enviar al MPPD</h3>
-                        <span class="h-2 w-2 rounded-full bg-emerald-400" title="Sincronizado en tiempo real"></span>
+                <div class="p-4 border-b border-slate-700 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center space-x-2">
+                            <h3 id="tabla-categoria-titulo" class="text-md font-bold text-slate-100">Enviar al MPPD</h3>
+                            <span class="h-2 w-2 rounded-full bg-emerald-400" title="Sincronizado en tiempo real"></span>
+                        </div>
+                        <span id="total-docs" class="text-xs bg-slate-700 px-2.5 py-1 rounded text-slate-300">Cargando...</span>
                     </div>
-                    <span id="total-docs" class="text-xs bg-slate-700 px-2 py-1 rounded text-slate-300">Cargando...</span>
+
+                    <!-- Barra de Búsqueda Rápida y Filtro por Comentarios -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div class="sm:col-span-2 relative flex items-center">
+                            <input type="text" id="search-input" oninput="actualizarFiltros()" placeholder="Buscar por remitente, contenido, fecha u observación..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 pr-16">
+                            <button type="button" id="btn-clear-search" onclick="limpiarFiltros()" class="hidden absolute right-2 text-[11px] text-amber-400 hover:text-amber-300 font-semibold px-1.5 py-0.5 rounded bg-slate-800">
+                                Limpiar
+                            </button>
+                        </div>
+                        <div>
+                            <select id="filter-comments" onchange="actualizarFiltros()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-400">
+                                <option value="todos">Seguimiento: Todos</option>
+                                <option value="con_comentarios">Con comentarios</option>
+                                <option value="sin_comentarios">Sin comentarios</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
+
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-sm">
                         <thead>
@@ -261,6 +281,27 @@
         window.cambiarPestana = function(categoria) {
             pestanaActual = categoria;
             actualizarEstilosPestanas();
+            renderizarDocumentos();
+        };
+
+        window.actualizarFiltros = function() {
+            const inputBusqueda = document.getElementById('search-input');
+            const filtroComentarios = document.getElementById('filter-comments').value;
+            const btnLimpiar = document.getElementById('btn-clear-search');
+
+            if (inputBusqueda.value.trim() !== '' || filtroComentarios !== 'todos') {
+                btnLimpiar.classList.remove('hidden');
+            } else {
+                btnLimpiar.classList.add('hidden');
+            }
+
+            renderizarDocumentos();
+        };
+
+        window.limpiarFiltros = function() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('filter-comments').value = 'todos';
+            document.getElementById('btn-clear-search').classList.add('hidden');
             renderizarDocumentos();
         };
 
@@ -560,11 +601,38 @@
             const tbody = document.getElementById('documents-table-body');
             tbody.innerHTML = '';
 
-            const docsFiltrados = documentos.filter(doc => (doc.categoria || 'enviar_mppd') === pestanaActual);
-            document.getElementById('total-docs').innerText = `${docsFiltrados.length} registros`;
+            const docsPorPestana = documentos.filter(doc => (doc.categoria || 'enviar_mppd') === pestanaActual);
+            const termino = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
+            const filtroComentarios = document.getElementById('filter-comments')?.value || 'todos';
+
+            const docsFiltrados = docsPorPestana.filter(doc => {
+                const tieneComentarios = Array.isArray(doc.comentarios) && doc.comentarios.length > 0;
+                if (filtroComentarios === 'con_comentarios' && !tieneComentarios) return false;
+                if (filtroComentarios === 'sin_comentarios' && tieneComentarios) return false;
+
+                if (!termino) return true;
+
+                const textoComentarios = tieneComentarios
+                    ? doc.comentarios.map(c => `${c.autor} ${c.texto}`).join(' ')
+                    : '';
+
+                const bloqueBusqueda = `${doc.remitente || ''} ${doc.contenido || ''} ${doc.fecha || ''} ${doc.observacion || ''} ${textoComentarios}`.toLowerCase();
+                return bloqueBusqueda.includes(termino);
+            });
+
+            if (docsFiltrados.length !== docsPorPestana.length) {
+                document.getElementById('total-docs').innerText = `${docsFiltrados.length} de ${docsPorPestana.length} registros`;
+            } else {
+                document.getElementById('total-docs').innerText = `${docsPorPestana.length} registros`;
+            }
+
+            if (docsPorPestana.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">No hay registros en "${NOMBRES_CATEGORIAS[pestanaActual]}".</td></tr>`;
+                return;
+            }
 
             if (docsFiltrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">No hay registros en "${NOMBRES_CATEGORIAS[pestanaActual]}".</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">No se encontraron coincidencias con el filtro aplicado.</td></tr>`;
                 return;
             }
 
