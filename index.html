@@ -249,6 +249,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const docsRef = collection(db, "documentos_mppd");
+        const auditoriaRef = collection(db, "auditoria_mppd");
 
         const usuarios = [
             { username: 'jefe', password: '1234', role: 'jefe', name: 'Teniente (Jefe)' },
@@ -447,11 +448,13 @@
                     contenido: document.getElementById('contenido').value,
                     fecha: fechaTexto,
                     observacion: document.getElementById('observacion').value,
+                    creadoPor: currentUser.name,
+                    creadoEl: new Date().toLocaleString(),
                     comentarios: []
                 });
                 document.getElementById('doc-form').reset();
             } catch (error) {
-                alert("Error al guardar en la nube.");
+                alert("Error al guardar en la nube. Verifique las reglas de Firestore.");
                 console.error(error);
             } finally {
                 btn.disabled = false;
@@ -481,7 +484,17 @@
         window.eliminarDoc = async function(firestoreId) {
             if (confirm('¿Desea eliminar este registro de la nube de forma permanente?')) {
                 try {
+                    const registroEliminado = documentos.find(d => d.firestoreId === firestoreId);
                     await deleteDoc(doc(db, "documentos_mppd", firestoreId));
+                    if (registroEliminado) {
+                        await addDoc(auditoriaRef, {
+                            accion: 'ELIMINADO',
+                            eliminadoPor: currentUser.name,
+                            fechaEliminacion: new Date().toLocaleString(),
+                            timestamp: Date.now(),
+                            registroOriginal: registroEliminado
+                        });
+                    }
                 } catch (error) {
                     console.error("Error al eliminar:", error);
                 }
@@ -616,7 +629,7 @@
                     ? doc.comentarios.map(c => `${c.autor} ${c.texto}`).join(' ')
                     : '';
 
-                const bloqueBusqueda = `${doc.remitente || ''} ${doc.contenido || ''} ${doc.fecha || ''} ${doc.observacion || ''} ${textoComentarios}`.toLowerCase();
+                const bloqueBusqueda = `${doc.remitente || ''} ${doc.contenido || ''} ${doc.fecha || ''} ${doc.observacion || ''} ${doc.creadoPor || ''} ${textoComentarios}`.toLowerCase();
                 return bloqueBusqueda.includes(termino);
             });
 
@@ -639,6 +652,10 @@
             docsFiltrados.forEach(doc => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-750 transition";
+
+                const infoAutor = doc.creadoPor
+                    ? `<div class="text-[10px] text-slate-400 font-normal mt-0.5">Cargado por: ${doc.creadoPor}${doc.creadoEl ? ` • ${doc.creadoEl}` : ''}</div>`
+                    : '';
 
                 let htmlComentarios = `<div class="text-xs text-slate-300">${doc.observacion || ''}</div>`;
                 if (doc.comentarios && doc.comentarios.length > 0) {
@@ -666,7 +683,10 @@
                 htmlAcciones += `</div>`;
 
                 tr.innerHTML = `
-                    <td class="p-3 font-bold text-slate-100">${doc.remitente}</td>
+                    <td class="p-3 font-bold text-slate-100">
+                        <div>${doc.remitente}</div>
+                        ${infoAutor}
+                    </td>
                     <td class="p-3 text-slate-300">${doc.contenido}</td>
                     <td class="p-3 text-slate-300 whitespace-nowrap">${doc.fecha}</td>
                     <td class="p-3">${htmlComentarios}</td>
