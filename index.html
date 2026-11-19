@@ -45,8 +45,9 @@
                     <p class="text-xs text-slate-400">Sistema de Control de Gestión y Documentos Pendientes</p>
                 </div>
             </div>
-            <div id="user-info" class="hidden flex items-center space-x-3">
+            <div id="user-info" class="hidden flex items-center space-x-2 flex-wrap justify-center gap-1.5">
                 <span id="nav-username" class="text-sm font-medium text-slate-200"></span>
+                <button onclick="abrirModalSeguridad()" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1.5 text-xs rounded text-amber-300 border border-slate-600 font-semibold transition">Seguridad</button>
                 <button onclick="cerrarSesion()" class="bg-red-600 hover:bg-red-700 px-3 py-1.5 text-xs rounded text-white font-semibold transition">Salir</button>
             </div>
         </div>
@@ -61,25 +62,28 @@
             <form id="login-form" onsubmit="manejarLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Usuario</label>
-                    <input type="text" id="username" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
+                    <input type="text" id="username" required placeholder="Ej: Subdireccion, Direccion, Lfuentes" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
                 </div>
                 <div>
                     <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Contraseña</label>
                     <input type="password" id="password" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
                 </div>
                 <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2.5 rounded transition">Ingresar</button>
+                <button type="button" id="btn-login-huella" onclick="ingresarConHuella()" class="hidden w-full bg-slate-700 hover:bg-slate-600 text-amber-300 border border-amber-500/40 font-bold p-2.5 rounded transition text-xs">
+                    Ingresar con Huella Digital (Subdireccion)
+                </button>
             </form>
             <div class="mt-4 text-xs text-slate-400 text-center space-y-1">
-                <p>Credenciales de acceso:</p>
-                <p><strong>jefe</strong> (Carga y Comenta) | <strong>prof</strong> (Solo Recepción/Carga)</p>
-                <p><strong>sup1</strong>, <strong>sup2</strong>, <strong>sup3</strong> (Visualización y Comentarios)</p>
+                <p>Clave inicial general: <strong>1234</strong></p>
+                <p>Supervisión y seguimiento: <strong>Jefe</strong>, <strong>Subdireccion</strong>, <strong>Direccion</strong></p>
+                <p>Recepción y carga: <strong>Lfuentes</strong>, <strong>Lpatino</strong>, <strong>Lmartinez</strong>, <strong>Jramos</strong>, <strong>Lordonez</strong>, <strong>Dgarcia</strong></p>
             </div>
         </section>
 
         <!-- VISTA 2: PANEL DE CONTROL Y PESTAÑAS -->
         <section id="dashboard-section" class="hidden space-y-5">
             
-            <!-- Notificación de Actualizaciones para Superiores -->
+            <!-- Notificación de Actualizaciones para Jefe, Subdireccion y Direccion -->
             <div id="notification-banner" class="hidden bg-amber-500/20 border border-amber-500/40 text-amber-300 p-3 rounded-lg text-sm flex items-center justify-between shadow-md">
                 <div class="flex items-center space-x-2">
                     <span class="animate-pulse h-2.5 w-2.5 rounded-full bg-amber-400"></span>
@@ -108,7 +112,7 @@
                 </button>
             </div>
 
-            <!-- Formulario de Registro (SOLO visible para Jefe y Recepción) -->
+            <!-- Formulario de Registro (SOLO visible para Jefe y Recepción/Carga) -->
             <div id="form-container" class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-lg hidden">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-1">
                     <h3 class="text-md font-bold text-amber-400">Nuevo Registro en: <span id="form-categoria-titulo" class="underline text-slate-100">Enviar al MPPD</span></h3>
@@ -201,6 +205,40 @@
 
     </main>
 
+    <!-- Modal de Seguridad: Cambio de Contraseña y Huella Digital -->
+    <div id="security-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 flex items-center justify-center p-4 no-print">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                <div>
+                    <h4 class="text-sm font-bold text-amber-400">Seguridad de la Cuenta</h4>
+                    <p id="security-user-label" class="text-xs text-slate-400"></p>
+                </div>
+                <button onclick="cerrarModalSeguridad()" class="text-xs text-slate-400 hover:text-slate-100 bg-slate-900 border border-slate-700 px-2.5 py-1 rounded">Cerrar</button>
+            </div>
+
+            <form id="change-password-form" onsubmit="cambiarContrasena(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Nueva Contraseña</label>
+                    <input type="password" id="new-password" required minlength="4" placeholder="Mínimo 4 caracteres" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-100 focus:outline-none focus:border-amber-400">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Confirmar Nueva Contraseña</label>
+                    <input type="password" id="confirm-password" required minlength="4" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-100 focus:outline-none focus:border-amber-400">
+                </div>
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2 rounded text-xs transition">Guardar Nueva Contraseña</button>
+            </form>
+
+            <!-- Opción de Huella Digital exclusiva para Subdireccion -->
+            <div id="biometric-box" class="hidden border-t border-slate-700 pt-3 space-y-2">
+                <p class="text-xs font-bold text-slate-200">Acceso Biométrico (Huella Digital)</p>
+                <p id="biometric-status" class="text-[11px] text-slate-400"></p>
+                <button type="button" onclick="registrarHuellaDigital()" class="w-full bg-slate-700 hover:bg-slate-600 text-amber-300 border border-amber-500/40 font-bold p-2 rounded text-xs transition">
+                    Configurar / Actualizar Huella Digital
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Vista exclusiva para impresión / guardado en PDF con todas las pestañas desglosadas -->
     <div id="print-report" class="p-6 max-w-4xl mx-auto">
         <div style="display:flex; align-items:center; gap:14px; border-bottom:2px solid #1e293b; padding-bottom:12px; margin-bottom:18px;">
@@ -216,8 +254,9 @@
     </div>
 
     <!-- Footer -->
-    <footer class="text-center p-4 text-xs text-slate-500 border-t border-slate-800 no-print">
-        Ministerio del Poder Popular para la Defensa &copy; 2026
+    <footer class="text-center p-4 text-xs text-slate-500 border-t border-slate-800 no-print space-y-1">
+        <div>Ministerio del Poder Popular para la Defensa &copy; 2026</div>
+        <div class="text-[10px] text-slate-500/80">Aplicación creada por el T.N. Robinson García López</div>
     </footer>
 
     <!-- Registro del Service Worker para PWA -->
@@ -251,13 +290,56 @@
         const docsRef = collection(db, "documentos_mppd");
         const auditoriaRef = collection(db, "auditoria_mppd");
 
-        const usuarios = [
-            { username: 'jefe', password: '1234', role: 'jefe', name: 'Teniente (Jefe)' },
-            { username: 'prof', password: '1234', role: 'profesional', name: 'Personal de Recepción' },
-            { username: 'sup1', password: '1234', role: 'superior', name: 'Superior 1' },
-            { username: 'sup2', password: '1234', role: 'superior', name: 'Superior 2' },
-            { username: 'sup3', password: '1234', role: 'superior', name: 'Superior 3' }
+        const TIEMPO_INACTIVIDAD_MS = 3 * 60 * 1000; // 3 minutos
+        let temporizadorInactividad = null;
+
+        function normalizarTextoSinAcentos(texto) {
+            return texto
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .trim();
+        }
+
+        function formatearNombreTitulo(texto) {
+            return texto
+                .toLowerCase()
+                .replace(/(^|\s|[.\-])([a-záéíóúñ])/g, (_, sep, letra) => `${sep}${letra.toUpperCase()}`);
+        }
+
+        const USUARIOS_BASE = [
+            { id: 'jefe', name: formatearNombreTitulo('jefe'), role: 'jefe', defaultPassword: '1234', allowsBiometrics: false },
+            { id: 'subdireccion', name: formatearNombreTitulo('subdireccion'), role: 'superior', defaultPassword: '1234', allowsBiometrics: true },
+            { id: 'direccion', name: formatearNombreTitulo('direccion'), role: 'superior', defaultPassword: '1234', allowsBiometrics: false },
+            { id: 'Lfuentes', name: 'Lfuentes', role: 'profesional', defaultPassword: '1234', allowsBiometrics: false },
+            { id: 'Lpatino', name: 'Lpatino', role: 'profesional', defaultPassword: '1234', allowsBiometrics: false },
+            { id: 'Lmartinez', name: 'Lmartinez', role: 'profesional', defaultPassword: '1234', allowsBiometrics: false },
+            { id: 'Jramos', name: 'Jramos', role: 'profesional', defaultPassword: '1234', allowsBiometrics: false },
+            { id: 'Lordonez', name: 'Lordonez', role: 'profesional', defaultPassword: '1234', allowsBiometrics: false },
+            { id: 'Dgarcia', name: 'Dgarcia', role: 'profesional', defaultPassword: '1234', allowsBiometrics: false }
         ];
+
+        let passwordsPersonalizadas = JSON.parse(localStorage.getItem('mppd_passwords')) || {};
+
+        function obtenerUsuariosActivos() {
+            return USUARIOS_BASE.map(u => ({
+                ...u,
+                password: passwordsPersonalizadas[u.id] || u.defaultPassword
+            }));
+        }
+
+        function buscarUsuarioPorEntrada(entrada) {
+            const limpia = normalizarTextoSinAcentos(entrada).replace(/[^a-z0-9]/g, '');
+            const lista = obtenerUsuariosActivos();
+            return lista.find(u => {
+                const idLimpio = normalizarTextoSinAcentos(u.id).replace(/[^a-z0-9]/g, '');
+                const nameLimpio = normalizarTextoSinAcentos(u.name).replace(/[^a-z0-9]/g, '');
+                if (idLimpio === limpia || nameLimpio === limpia) return true;
+                if (u.id === 'subdireccion' && (limpia === 'sup1' || limpia === 'sub1')) return true;
+                if (u.id === 'direccion' && (limpia === 'sup2' || limpia === 'sub2')) return true;
+                return false;
+            });
+        }
 
         const NOMBRES_CATEGORIAS = {
             'enviar_mppd': 'Enviar al MPPD',
@@ -272,8 +354,63 @@
         let ultimaRevision = JSON.parse(localStorage.getItem('mppd_ult_revision')) || {};
         let unsubscribe = null;
 
+        async function cerrarYActualizarAutomaticamente() {
+            if (temporizadorInactividad) {
+                clearTimeout(temporizadorInactividad);
+                temporizadorInactividad = null;
+            }
+            if (unsubscribe) unsubscribe();
+            currentUser = null;
+            localStorage.removeItem('mppd_user');
+
+            try {
+                if ('serviceWorker' in navigator) {
+                    const regs = await navigator.serviceWorker.getRegistrations();
+                    for (const reg of regs) {
+                        await reg.update();
+                    }
+                }
+                if (window.caches) {
+                    const keys = await caches.keys();
+                    await Promise.all(keys.map(k => caches.delete(k)));
+                }
+            } catch (e) {
+                console.warn('Error actualizando caché:', e);
+            }
+
+            window.location.reload();
+        }
+
+        function reiniciarTemporizadorInactividad() {
+            if (temporizadorInactividad) {
+                clearTimeout(temporizadorInactividad);
+                temporizadorInactividad = null;
+            }
+            if (!currentUser) return;
+            temporizadorInactividad = setTimeout(() => {
+                cerrarYActualizarAutomaticamente();
+            }, TIEMPO_INACTIVIDAD_MS);
+        }
+
+        ['click', 'keydown', 'touchstart', 'mousemove', 'scroll'].forEach(evento => {
+            window.addEventListener(evento, () => {
+                if (currentUser) reiniciarTemporizadorInactividad();
+            }, { passive: true });
+        });
+
+        function actualizarBotonHuellaLogin() {
+            const btn = document.getElementById('btn-login-huella');
+            const credId = localStorage.getItem('mppd_biometric_subdireccion');
+            if (btn && window.PublicKeyCredential && credId) {
+                btn.classList.remove('hidden');
+            } else if (btn) {
+                btn.classList.add('hidden');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             actualizarEstilosPestanas();
+            actualizarBotonHuellaLogin();
             if (currentUser) {
                 mostrarDashboard();
             }
@@ -324,12 +461,17 @@
 
         window.manejarLogin = function(e) {
             e.preventDefault();
-            const u = document.getElementById('username').value.trim();
+            const u = document.getElementById('username').value;
             const p = document.getElementById('password').value.trim();
 
-            const encontrado = usuarios.find(user => user.username === u && user.password === p);
-            if (encontrado) {
-                currentUser = encontrado;
+            const encontrado = buscarUsuarioPorEntrada(u);
+            if (encontrado && encontrado.password === p) {
+                currentUser = {
+                    id: encontrado.id,
+                    name: encontrado.name,
+                    role: encontrado.role,
+                    allowsBiometrics: encontrado.allowsBiometrics
+                };
                 localStorage.setItem('mppd_user', JSON.stringify(currentUser));
                 mostrarDashboard();
             } else {
@@ -337,7 +479,144 @@
             }
         };
 
+        function base64UrlToBuffer(base64url) {
+            const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+            const binStr = atob(base64);
+            const bytes = new Uint8Array(binStr.length);
+            for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+            return bytes.buffer;
+        }
+
+        function bufferToBase64Url(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binStr = '';
+            for (let i = 0; i < bytes.byteLength; i++) binStr += String.fromCharCode(bytes[i]);
+            return btoa(binStr).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        }
+
+        window.registrarHuellaDigital = async function() {
+            if (!currentUser || currentUser.id !== 'subdireccion') return;
+            if (!window.PublicKeyCredential || !navigator.credentials) {
+                alert('Este dispositivo o navegador no soporta acceso biométrico web.');
+                return;
+            }
+            try {
+                const challenge = crypto.getRandomValues(new Uint8Array(32));
+                const userId = new TextEncoder().encode('mppd_subdireccion');
+                const credential = await navigator.credentials.create({
+                    publicKey: {
+                        challenge,
+                        rp: { name: 'Control de Gestión - MPPD' },
+                        user: {
+                            id: userId,
+                            name: 'subdireccion',
+                            displayName: 'Subdireccion'
+                        },
+                        pubKeyCredParams: [{ alg: -7, type: 'public-key' }, { alg: -257, type: 'public-key' }],
+                        authenticatorSelection: {
+                            authenticatorAttachment: 'platform',
+                            userVerification: 'required'
+                        },
+                        timeout: 60000
+                    }
+                });
+                if (credential && credential.rawId) {
+                    localStorage.setItem('mppd_biometric_subdireccion', bufferToBase64Url(credential.rawId));
+                    actualizarBotonHuellaLogin();
+                    actualizarEstadoBiometricoModal();
+                    alert('Huella digital configurada para Subdireccion en este dispositivo.');
+                }
+            } catch (error) {
+                console.error('Error configurando huella:', error);
+                alert('No se pudo registrar la huella digital. Verifique que el dispositivo tenga biometría activa y esté en HTTPS.');
+            }
+        };
+
+        window.ingresarConHuella = async function() {
+            const credId = localStorage.getItem('mppd_biometric_subdireccion');
+            if (!credId || !window.PublicKeyCredential) {
+                alert('Primero configure la huella digital desde la cuenta de Subdireccion.');
+                return;
+            }
+            try {
+                const challenge = crypto.getRandomValues(new Uint8Array(32));
+                const assertion = await navigator.credentials.get({
+                    publicKey: {
+                        challenge,
+                        allowCredentials: [{
+                            id: base64UrlToBuffer(credId),
+                            type: 'public-key'
+                        }],
+                        userVerification: 'required',
+                        timeout: 60000
+                    }
+                });
+                if (assertion) {
+                    currentUser = {
+                        id: 'subdireccion',
+                        name: formatearNombreTitulo('subdireccion'),
+                        role: 'superior',
+                        allowsBiometrics: true
+                    };
+                    localStorage.setItem('mppd_user', JSON.stringify(currentUser));
+                    mostrarDashboard();
+                }
+            } catch (error) {
+                console.error('Error al validar huella:', error);
+                alert('No se validó la huella digital. Puede ingresar con su contraseña.');
+            }
+        };
+
+        function actualizarEstadoBiometricoModal() {
+            const box = document.getElementById('biometric-box');
+            const status = document.getElementById('biometric-status');
+            if (!currentUser || currentUser.id !== 'subdireccion') {
+                box.classList.add('hidden');
+                return;
+            }
+            box.classList.remove('hidden');
+            const activa = Boolean(localStorage.getItem('mppd_biometric_subdireccion'));
+            status.innerText = activa
+                ? 'Estado: Huella digital activa en este dispositivo.'
+                : 'Estado: Aún no configurada en este dispositivo.';
+        }
+
+        window.abrirModalSeguridad = function() {
+            if (!currentUser) return;
+            document.getElementById('security-user-label').innerText = `Usuario: ${currentUser.name}`;
+            document.getElementById('change-password-form').reset();
+            actualizarEstadoBiometricoModal();
+            document.getElementById('security-modal').classList.remove('hidden');
+        };
+
+        window.cerrarModalSeguridad = function() {
+            document.getElementById('security-modal').classList.add('hidden');
+        };
+
+        window.cambiarContrasena = function(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+            const nueva = document.getElementById('new-password').value.trim();
+            const confirmar = document.getElementById('confirm-password').value.trim();
+            if (nueva.length < 4) {
+                alert('La contraseña debe tener al menos 4 caracteres.');
+                return;
+            }
+            if (nueva !== confirmar) {
+                alert('Las contraseñas no coinciden.');
+                return;
+            }
+            passwordsPersonalizadas[currentUser.id] = nueva;
+            localStorage.setItem('mppd_passwords', JSON.stringify(passwordsPersonalizadas));
+            cerrarModalSeguridad();
+            alert('Contraseña actualizada correctamente.');
+        };
+
         window.cerrarSesion = function() {
+            if (temporizadorInactividad) {
+                clearTimeout(temporizadorInactividad);
+                temporizadorInactividad = null;
+            }
             if (unsubscribe) unsubscribe();
             currentUser = null;
             localStorage.removeItem('mppd_user');
@@ -345,6 +624,7 @@
             document.getElementById('user-info').classList.add('hidden');
             document.getElementById('login-section').classList.remove('hidden');
             document.getElementById('login-form').reset();
+            actualizarBotonHuellaLogin();
         };
 
         function mostrarDashboard() {
@@ -362,6 +642,7 @@
 
             actualizarEstilosPestanas();
             escucharCambiosEnTiempoReal();
+            reiniciarTemporizadorInactividad();
         }
 
         function escucharCambiosEnTiempoReal() {
@@ -403,21 +684,29 @@
             });
         }
 
+        function recibeNotificaciones(user) {
+            if (!user) return false;
+            return user.id === 'jefe' || user.id === 'subdireccion' || user.id === 'direccion';
+        }
+
         function verificarNotificaciones() {
-            if (currentUser && currentUser.role === 'superior') {
-                const ultimaVez = ultimaRevision[currentUser.username] || 0;
+            const banner = document.getElementById('notification-banner');
+            if (currentUser && recibeNotificaciones(currentUser)) {
+                const ultimaVez = ultimaRevision[currentUser.id] || 0;
                 const tieneNuevos = documentos.some(doc => doc.timestamp > ultimaVez);
-                const banner = document.getElementById('notification-banner');
                 if (tieneNuevos && documentos.length > 0) {
                     banner.classList.remove('hidden');
                 } else {
                     banner.classList.add('hidden');
                 }
+            } else {
+                banner.classList.add('hidden');
             }
         }
 
         window.marcarVisto = function() {
-            ultimaRevision[currentUser.username] = Date.now();
+            if (!currentUser) return;
+            ultimaRevision[currentUser.id] = Date.now();
             localStorage.setItem('mppd_ult_revision', JSON.stringify(ultimaRevision));
             document.getElementById('notification-banner').classList.add('hidden');
         };
