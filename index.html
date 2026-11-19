@@ -10,7 +10,6 @@
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./escudo-mppd.png">
     <title>Control de Gestión - MPPD</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
@@ -82,7 +81,7 @@
 
         <!-- VISTA 2: PANEL DE CONTROL Y PESTAÑAS -->
         <section id="dashboard-section" class="hidden space-y-5">
-            
+
             <!-- Notificación de Actualizaciones para Jefe, Subdireccion y Direccion -->
             <div id="notification-banner" class="hidden bg-amber-500/20 border border-amber-500/40 text-amber-300 p-3 rounded-lg text-sm flex items-center justify-between shadow-md">
                 <div class="flex items-center space-x-2">
@@ -187,7 +186,7 @@
                     </table>
                 </div>
 
-                <!-- Barra de Exportación al final de la lista (Visible para todos los usuarios) -->
+                <!-- Barra de Exportación al final de la lista -->
                 <div class="p-4 bg-slate-900/70 border-t border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3">
                     <span class="text-xs text-slate-400">Exportar desglose completo de las 4 pestañas:</span>
                     <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
@@ -718,7 +717,7 @@
         function escucharCambiosEnTiempoReal() {
             if (unsubscribe) unsubscribe();
             const q = query(docsRef, orderBy("timestamp", "desc"));
-            
+
             unsubscribe = onSnapshot(q, (snapshot) => {
                 documentos = [];
                 snapshot.forEach((docSnap) => {
@@ -1029,7 +1028,7 @@
                 }
 
                 let htmlAcciones = `<div class="flex items-center justify-center space-x-2 flex-wrap gap-1.5">`;
-                
+
                 if (currentUser.role === 'jefe' || currentUser.role === 'superior') {
                     htmlAcciones += `<button onclick="agregarComentario('${doc.firestoreId}')" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-3 py-1.5 text-xs rounded transition">Comentar</button>`;
                 }
