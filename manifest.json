@@ -1,25 +1,22 @@
 {
   "name": "Control de Gestión - MPPD",
   "short_name": "Gestión MPPD",
-  "description": "Sistema de Control de Gestión y Documentos Pendientes - MPPD",
+  "description": "Sistema de Control de Gestión y Documentos Pendientes",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#1e293b",
-  "orientation": "portrait-primary",
+  "background_color": "#f0f2f5",
+  "theme_color": "#008069",
   "icons": [
     {
-      "src": "escudo-mppd.png",
+      "src": "./icono-mppd.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "escudo-mppd.png",
+      "src": "./icono-mppd.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }

@@ -3,15 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1e293b">
+    <meta name="theme-color" content="#008069">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Gestión MPPD">
     <link rel="manifest" href="./manifest.json">
-    <link rel="apple-touch-icon" href="./escudo-mppd.png">
+    <link rel="icon" type="image/png" href="./icono-mppd.png">
+    <link rel="apple-touch-icon" href="./icono-mppd.png">
     <title>Control de Gestión - MPPD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        body {
+            background-color: #f0f2f5;
+            color: #111b21;
+        }
         @media print {
             body {
                 background: #ffffff !important;
@@ -31,23 +36,27 @@
         }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
+<body class="bg-[#f0f2f5] text-[#111b21] min-h-screen flex flex-col justify-between">
 
     <!-- Header Institucional con Escudo del Ministerio -->
-    <header class="bg-slate-800 border-b border-slate-700 p-4 shadow-md no-print">
+    <header class="bg-[#008069] text-white border-b border-[#006d59] p-4 shadow-sm no-print">
         <div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
             <div class="flex items-center space-x-3 text-center sm:text-left">
-                <img src="escudo-mppd.png" alt="Escudo MPPD" class="w-12 h-12 object-contain" onerror="this.style.display='none'">
+                <img src="escudo-mppd.png" alt="Escudo MPPD" class="w-12 h-12 object-contain bg-white/95 rounded-lg p-1 shadow-sm" onerror="this.style.display='none'">
                 <div>
-                    <span class="text-xs font-bold tracking-wider text-amber-400 uppercase">República Bolivariana de Venezuela</span>
-                    <h1 class="text-sm font-extrabold text-slate-100">Ministerio del Poder Popular para la Defensa</h1>
-                    <p class="text-xs text-slate-400">Sistema de Control de Gestión y Documentos Pendientes</p>
+                    <span class="text-xs font-bold tracking-wider text-[#d9fdd3] uppercase">República Bolivariana de Venezuela</span>
+                    <h1 class="text-sm font-extrabold text-white">Ministerio del Poder Popular para la Defensa</h1>
+                    <p class="text-xs text-[#e7fce3]">Sistema de Control de Gestión y Documentos Pendientes</p>
                 </div>
             </div>
             <div id="user-info" class="hidden flex items-center space-x-2 flex-wrap justify-center gap-1.5">
-                <span id="nav-username" class="text-sm font-medium text-slate-200"></span>
-                <button onclick="abrirModalSeguridad()" class="bg-slate-700 hover:bg-slate-600 px-2.5 py-1.5 text-xs rounded text-amber-300 border border-slate-600 font-semibold transition">Seguridad</button>
-                <button onclick="cerrarSesion()" class="bg-red-600 hover:bg-red-700 px-3 py-1.5 text-xs rounded text-white font-semibold transition">Salir</button>
+                <span id="nav-username" class="text-sm font-semibold text-white bg-black/15 px-2.5 py-1 rounded-full"></span>
+                <button type="button" onclick="activarNotificacionesManual()" id="btn-notif-status" class="relative bg-[#e7fce3] hover:bg-[#d9fdd3] px-2.5 py-1.5 text-xs rounded-lg text-[#005c4b] border border-[#00a884]/50 font-bold transition flex items-center gap-1.5" title="Estado de alertas y burbuja de nuevos documentos">
+                    <span>Alertas</span>
+                    <span id="badge-nuevos-docs" class="hidden bg-red-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full leading-none">0</span>
+                </button>
+                <button type="button" onclick="abrirModalSeguridad()" class="bg-[#d9fdd3] hover:bg-[#c6f8bd] px-2.5 py-1.5 text-xs rounded-lg text-[#005c4b] border border-[#b6ebb0] font-bold transition">Seguridad</button>
+                <button type="button" onclick="cerrarSesion()" class="bg-white hover:bg-red-50 px-3 py-1.5 text-xs rounded-lg text-red-700 border border-red-200 font-bold transition">Salir</button>
             </div>
         </div>
     </header>
@@ -56,26 +65,26 @@
     <main class="max-w-5xl w-full mx-auto p-4 flex-grow no-print">
 
         <!-- VISTA 1: LOGIN -->
-        <section id="login-section" class="max-w-md mx-auto bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl mt-10">
-            <h2 class="text-xl font-bold text-center mb-6 text-slate-100">Acceso al Sistema</h2>
+        <section id="login-section" class="max-w-md mx-auto bg-white p-6 rounded-2xl border border-slate-200 shadow-md mt-10">
+            <h2 class="text-xl font-bold text-center mb-6 text-[#111b21]">Acceso al Sistema</h2>
             <form id="login-form" onsubmit="manejarLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Usuario</label>
-                    <input type="text" id="username" required oninput="actualizarBotonHuellaLogin()" placeholder="Ej: Subdireccion, Direccion, Lfuentes" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
+                    <label for="username" class="block text-xs uppercase font-bold text-[#54656f] mb-1">Usuario</label>
+                    <input type="text" id="username" required autocomplete="username" oninput="actualizarBotonHuellaLogin()" placeholder="Ej: Subdireccion, Direccion, Lfuentes" class="w-full bg-[#f0f2f5] border border-slate-300 rounded-lg p-2.5 text-[#111b21] placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#008069] focus:ring-2 focus:ring-[#00a884]/20">
                 </div>
                 <div>
-                    <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Contraseña</label>
-                    <input type="password" id="password" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
+                    <label for="password" class="block text-xs uppercase font-bold text-[#54656f] mb-1">Contraseña</label>
+                    <input type="password" id="password" required autocomplete="current-password" class="w-full bg-[#f0f2f5] border border-slate-300 rounded-lg p-2.5 text-[#111b21] focus:outline-none focus:bg-white focus:border-[#008069] focus:ring-2 focus:ring-[#00a884]/20">
                 </div>
-                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2.5 rounded transition">Ingresar</button>
-                <button type="button" id="btn-login-huella" onclick="ingresarConHuella()" class="hidden w-full bg-slate-700 hover:bg-slate-600 text-amber-300 border border-amber-500/40 font-bold p-2.5 rounded transition text-xs">
+                <button type="submit" id="btn-login" class="w-full bg-[#008069] hover:bg-[#017561] text-white font-bold p-2.5 rounded-lg transition shadow-sm">Ingresar</button>
+                <button type="button" id="btn-login-huella" onclick="ingresarConHuella()" class="hidden w-full bg-[#e7fce3] hover:bg-[#d9fdd3] text-[#005c4b] border border-[#00a884]/40 font-bold p-2.5 rounded-lg transition text-xs">
                     Ingresar con Huella Digital
                 </button>
             </form>
-            <div class="mt-4 text-xs text-slate-400 text-center space-y-1">
-                <p>Clave inicial general: <strong>1234</strong></p>
-                <p>Supervisión y seguimiento: <strong>Jefe</strong>, <strong>Subdireccion</strong>, <strong>Direccion</strong></p>
-                <p>Recepción y carga: <strong>Lfuentes</strong>, <strong>Lpatino</strong>, <strong>Lmartinez</strong>, <strong>Jramos</strong>, <strong>Lordonez</strong>, <strong>Dgarcia</strong></p>
+            <div class="mt-4 text-xs text-[#54656f] text-center space-y-1 border-t border-slate-100 pt-3">
+                <p>Clave inicial general: <strong class="text-[#111b21]">1234</strong></p>
+                <p>Supervisión y seguimiento: <strong class="text-[#008069]">Jefe</strong>, <strong class="text-[#008069]">Subdireccion</strong>, <strong class="text-[#008069]">Direccion</strong></p>
+                <p>Recepción y carga: <strong class="text-[#111b21]">Lfuentes</strong>, <strong class="text-[#111b21]">Lpatino</strong>, <strong class="text-[#111b21]">Lmartinez</strong>, <strong class="text-[#111b21]">Jramos</strong>, <strong class="text-[#111b21]">Lordonez</strong>, <strong class="text-[#111b21]">Dgarcia</strong></p>
             </div>
         </section>
 
@@ -83,84 +92,84 @@
         <section id="dashboard-section" class="hidden space-y-5">
 
             <!-- Notificación de Actualizaciones para Jefe, Subdireccion y Direccion -->
-            <div id="notification-banner" class="hidden bg-amber-500/20 border border-amber-500/40 text-amber-300 p-3 rounded-lg text-sm flex items-center justify-between shadow-md">
-                <div class="flex items-center space-x-2">
-                    <span class="animate-pulse h-2.5 w-2.5 rounded-full bg-amber-400"></span>
+            <div id="notification-banner" class="hidden bg-[#e7fce3] border border-[#00a884]/50 text-[#005c4b] p-3.5 rounded-xl text-sm flex items-center justify-between shadow-sm gap-3">
+                <div class="flex items-center space-x-2.5">
+                    <span class="animate-pulse h-3 w-3 rounded-full bg-[#00a884] shrink-0"></span>
                     <span id="notification-text" class="font-semibold">Hay nuevos registros agregados en el sistema desde su última revisión.</span>
                 </div>
-                <button onclick="marcarVisto()" class="text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 px-3 py-1.5 rounded font-bold transition">Aceptar</button>
+                <button type="button" onclick="marcarVisto()" class="text-xs bg-[#008069] hover:bg-[#017561] text-white px-3.5 py-1.5 rounded-lg font-bold transition shadow-sm shrink-0">Aceptar</button>
             </div>
 
             <!-- NAVEGACIÓN POR PESTAÑAS -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 bg-slate-800/80 p-2 rounded-xl border border-slate-700">
-                <button onclick="cambiarPestana('enviar_mppd')" id="tab-enviar_mppd" class="tab-btn flex items-center justify-between px-3 py-3 rounded-lg text-xs font-bold transition text-left">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm" role="tablist">
+                <button type="button" role="tab" onclick="cambiarPestana('enviar_mppd')" id="tab-enviar_mppd" class="tab-btn flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-bold transition text-left">
                     <span>Enviar al MPPD</span>
-                    <span id="count-enviar_mppd" class="ml-2 px-2 py-0.5 rounded-full text-[11px] bg-slate-900/70">0</span>
+                    <span id="count-enviar_mppd" class="ml-2 px-2 py-0.5 rounded-full text-[11px]">0</span>
                 </button>
-                <button onclick="cambiarPestana('decision_mppd')" id="tab-decision_mppd" class="tab-btn flex items-center justify-between px-3 py-3 rounded-lg text-xs font-bold transition text-left">
+                <button type="button" role="tab" onclick="cambiarPestana('decision_mppd')" id="tab-decision_mppd" class="tab-btn flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-bold transition text-left">
                     <span>Para decisión del MPPD</span>
-                    <span id="count-decision_mppd" class="ml-2 px-2 py-0.5 rounded-full text-[11px] bg-slate-900/70">0</span>
+                    <span id="count-decision_mppd" class="ml-2 px-2 py-0.5 rounded-full text-[11px]">0</span>
                 </button>
-                <button onclick="cambiarPestana('invitaciones_exterior')" id="tab-invitaciones_exterior" class="tab-btn flex items-center justify-between px-3 py-3 rounded-lg text-xs font-bold transition text-left">
+                <button type="button" role="tab" onclick="cambiarPestana('invitaciones_exterior')" id="tab-invitaciones_exterior" class="tab-btn flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-bold transition text-left">
                     <span>Invitaciones al exterior</span>
-                    <span id="count-invitaciones_exterior" class="ml-2 px-2 py-0.5 rounded-full text-[11px] bg-slate-900/70">0</span>
+                    <span id="count-invitaciones_exterior" class="ml-2 px-2 py-0.5 rounded-full text-[11px]">0</span>
                 </button>
-                <button onclick="cambiarPestana('conocimiento_fines')" id="tab-conocimiento_fines" class="tab-btn flex items-center justify-between px-3 py-3 rounded-lg text-xs font-bold transition text-left">
+                <button type="button" role="tab" onclick="cambiarPestana('conocimiento_fines')" id="tab-conocimiento_fines" class="tab-btn flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-bold transition text-left">
                     <span>Para conocimiento y fines</span>
-                    <span id="count-conocimiento_fines" class="ml-2 px-2 py-0.5 rounded-full text-[11px] bg-slate-900/70">0</span>
+                    <span id="count-conocimiento_fines" class="ml-2 px-2 py-0.5 rounded-full text-[11px]">0</span>
                 </button>
             </div>
 
             <!-- Formulario de Registro (SOLO visible para Jefe y Recepción/Carga) -->
-            <div id="form-container" class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-lg hidden">
+            <div id="form-container" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hidden">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-1">
-                    <h3 class="text-md font-bold text-amber-400">Nuevo Registro en: <span id="form-categoria-titulo" class="underline text-slate-100">Enviar al MPPD</span></h3>
-                    <span class="text-[11px] text-slate-400">Se guardará directamente en la pestaña activa</span>
+                    <h3 class="text-md font-bold text-[#008069]">Nuevo Registro en: <span id="form-categoria-titulo" class="underline text-[#111b21]">Enviar al MPPD</span></h3>
+                    <span class="text-[11px] text-[#54656f]">Se guardará directamente en la pestaña activa</span>
                 </div>
                 <form id="doc-form" onsubmit="agregarDocumento(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Remitente</label>
-                        <input type="text" id="remitente" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
+                        <label for="remitente" class="block text-xs uppercase font-bold text-[#54656f] mb-1">Remitente</label>
+                        <input type="text" id="remitente" required class="w-full bg-[#f0f2f5] border border-slate-300 rounded-lg p-2.5 text-[#111b21] focus:outline-none focus:bg-white focus:border-[#008069] focus:ring-2 focus:ring-[#00a884]/20">
                     </div>
                     <div>
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Contenido</label>
-                        <input type="text" id="contenido" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
+                        <label for="contenido" class="block text-xs uppercase font-bold text-[#54656f] mb-1">Contenido</label>
+                        <input type="text" id="contenido" required class="w-full bg-[#f0f2f5] border border-slate-300 rounded-lg p-2.5 text-[#111b21] focus:outline-none focus:bg-white focus:border-[#008069] focus:ring-2 focus:ring-[#00a884]/20">
                     </div>
                     <div>
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Fecha (Ej: 19/11/2026)</label>
-                        <input type="text" id="fecha" required placeholder="DD/MM/AAAA" maxlength="10" oninput="formatearInputFecha(this)" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
+                        <label for="fecha" class="block text-xs uppercase font-bold text-[#54656f] mb-1">Fecha (Ej: 19/11/2026)</label>
+                        <input type="text" id="fecha" required placeholder="DD/MM/AAAA" maxlength="10" oninput="formatearInputFecha(this)" class="w-full bg-[#f0f2f5] border border-slate-300 rounded-lg p-2.5 text-[#111b21] focus:outline-none focus:bg-white focus:border-[#008069] focus:ring-2 focus:ring-[#00a884]/20">
                     </div>
                     <div>
-                        <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Observación</label>
-                        <input type="text" id="observacion" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-100 focus:outline-none focus:border-amber-400">
+                        <label for="observacion" class="block text-xs uppercase font-bold text-[#54656f] mb-1">Observación</label>
+                        <input type="text" id="observacion" required class="w-full bg-[#f0f2f5] border border-slate-300 rounded-lg p-2.5 text-[#111b21] focus:outline-none focus:bg-white focus:border-[#008069] focus:ring-2 focus:ring-[#00a884]/20">
                     </div>
                     <div class="md:col-span-2">
-                        <button type="submit" id="btn-guardar" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2.5 rounded transition">Guardar en la Nube</button>
+                        <button type="submit" id="btn-guardar" class="w-full bg-[#008069] hover:bg-[#017561] text-white font-bold p-2.5 rounded-lg transition shadow-sm">Guardar en la Nube</button>
                     </div>
                 </form>
             </div>
 
             <!-- Tabla de Listado de Registros por Pestaña -->
-            <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-lg overflow-hidden">
-                <div class="p-4 border-b border-slate-700 space-y-3">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-4 border-b border-slate-200 space-y-3 bg-white">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center space-x-2">
-                            <h3 id="tabla-categoria-titulo" class="text-md font-bold text-slate-100">Enviar al MPPD</h3>
-                            <span class="h-2 w-2 rounded-full bg-emerald-400" title="Sincronizado en tiempo real"></span>
+                            <h3 id="tabla-categoria-titulo" class="text-md font-bold text-[#111b21]">Enviar al MPPD</h3>
+                            <span class="h-2.5 w-2.5 rounded-full bg-[#00a884]" title="Sincronizado en tiempo real"></span>
                         </div>
-                        <span id="total-docs" class="text-xs bg-slate-700 px-2.5 py-1 rounded text-slate-300">Cargando...</span>
+                        <span id="total-docs" class="text-xs bg-[#e7fce3] text-[#005c4b] border border-[#00a884]/30 font-semibold px-2.5 py-1 rounded-full">Cargando...</span>
                     </div>
 
                     <!-- Barra de Búsqueda Rápida y Filtro por Comentarios -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <div class="sm:col-span-2 relative flex items-center">
-                            <input type="text" id="search-input" oninput="actualizarFiltros()" placeholder="Buscar por remitente, contenido, fecha u observación..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 pr-16">
-                            <button type="button" id="btn-clear-search" onclick="limpiarFiltros()" class="hidden absolute right-2 text-[11px] text-amber-400 hover:text-amber-300 font-semibold px-1.5 py-0.5 rounded bg-slate-800">
+                            <input type="text" id="search-input" oninput="actualizarFiltros()" placeholder="Buscar por remitente, contenido, fecha u observación..." class="w-full bg-[#f0f2f5] border border-slate-300 rounded-lg px-3 py-2 text-xs text-[#111b21] placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#008069] focus:ring-2 focus:ring-[#00a884]/20 pr-16">
+                            <button type="button" id="btn-clear-search" onclick="limpiarFiltros()" class="hidden absolute right-2 text-[11px] text-[#008069] hover:text-[#017561] font-bold px-2 py-0.5 rounded bg-[#e7fce3]">
                                 Limpiar
                             </button>
                         </div>
                         <div>
-                            <select id="filter-comments" onchange="actualizarFiltros()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-400">
+                            <select id="filter-comments" onchange="actualizarFiltros()" class="w-full bg-[#f0f2f5] border border-slate-300 rounded-lg px-3 py-2 text-xs text-[#111b21] focus:outline-none focus:bg-white focus:border-[#008069] focus:ring-2 focus:ring-[#00a884]/20">
                                 <option value="todos">Seguimiento: Todos</option>
                                 <option value="con_comentarios">Con comentarios</option>
                                 <option value="sin_comentarios">Sin comentarios</option>
@@ -172,7 +181,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-sm">
                         <thead>
-                            <tr class="bg-slate-900 text-slate-400 uppercase text-xs">
+                            <tr class="bg-[#f0f2f5] text-[#54656f] border-b border-slate-200 uppercase text-xs">
                                 <th class="p-3">Remitente</th>
                                 <th class="p-3">Contenido</th>
                                 <th class="p-3">Fecha</th>
@@ -180,20 +189,20 @@
                                 <th class="p-3 text-center">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="documents-table-body" class="divide-y divide-slate-700">
-                            <tr><td colspan="5" class="p-4 text-center text-slate-500">Conectando con la nube...</td></tr>
+                        <tbody id="documents-table-body" class="divide-y divide-slate-200 bg-white">
+                            <tr><td colspan="5" class="p-4 text-center text-[#54656f]">Conectando con la nube...</td></tr>
                         </tbody>
                     </table>
                 </div>
 
                 <!-- Barra de Exportación al final de la lista -->
-                <div class="p-4 bg-slate-900/70 border-t border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <span class="text-xs text-slate-400">Exportar desglose completo de las 4 pestañas:</span>
+                <div class="p-4 bg-[#f0f2f5] border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <span class="text-xs text-[#54656f] font-medium">Exportar desglose completo de las 4 pestañas:</span>
                     <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-                        <button onclick="copiarTodoTexto()" id="btn-copiar" class="flex-1 sm:flex-initial bg-slate-700 hover:bg-slate-600 text-slate-100 border border-slate-600 px-4 py-2.5 rounded-lg text-xs font-bold transition">
+                        <button type="button" onclick="copiarTodoTexto()" id="btn-copiar" class="flex-1 sm:flex-initial bg-white hover:bg-[#e7fce3] text-[#008069] border border-[#008069]/40 px-4 py-2.5 rounded-lg text-xs font-bold transition">
                             Copiar Todo
                         </button>
-                        <button onclick="generarPDF()" class="flex-1 sm:flex-initial bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2.5 rounded-lg text-xs font-bold transition">
+                        <button type="button" onclick="generarPDF()" class="flex-1 sm:flex-initial bg-[#008069] hover:bg-[#017561] text-white px-4 py-2.5 rounded-lg text-xs font-bold transition shadow-sm">
                             Generar PDF
                         </button>
                     </div>
@@ -205,42 +214,62 @@
     </main>
 
     <!-- Modal de Seguridad: Cambio de Contraseña y Huella Digital -->
-    <div id="security-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 flex items-center justify-center p-4 no-print">
-        <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-md w-full p-5 shadow-2xl space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+    <div id="security-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-[1px] flex items-center justify-center p-4 no-print">
+        <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div>
-                    <h4 class="text-sm font-bold text-amber-400">Seguridad de la Cuenta</h4>
-                    <p id="security-user-label" class="text-xs text-slate-400"></p>
+                    <h4 class="text-sm font-bold text-[#008069]">Seguridad de la Cuenta</h4>
+                    <p id="security-user-label" class="text-xs text-[#54656f]"></p>
                 </div>
-                <button onclick="cerrarModalSeguridad()" class="text-xs text-slate-400 hover:text-slate-100 bg-slate-900 border border-slate-700 px-2.5 py-1 rounded">Cerrar</button>
+                <button type="button" onclick="cerrarModalSeguridad()" class="text-xs text-[#54656f] hover:text-[#111b21] bg-[#f0f2f5] border border-slate-300 px-2.5 py-1 rounded-lg font-semibold">Cerrar</button>
             </div>
 
             <form id="change-password-form" onsubmit="cambiarContrasena(event)" class="space-y-3">
                 <div>
-                    <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Nueva Contraseña</label>
-                    <input type="password" id="new-password" required minlength="4" placeholder="Mínimo 4 caracteres" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-100 focus:outline-none focus:border-amber-400">
+                    <label for="new-password" class="block text-xs uppercase font-bold text-[#54656f] mb-1">Nueva Contraseña</label>
+                    <input type="password" id="new-password" required minlength="4" placeholder="Mínimo 4 caracteres" class="w-full bg-[#f0f2f5] border border-slate-300 rounded-lg p-2 text-sm text-[#111b21] focus:outline-none focus:bg-white focus:border-[#008069]">
                 </div>
                 <div>
-                    <label class="block text-xs uppercase font-bold text-slate-400 mb-1">Confirmar Nueva Contraseña</label>
-                    <input type="password" id="confirm-password" required minlength="4" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-100 focus:outline-none focus:border-amber-400">
+                    <label for="confirm-password" class="block text-xs uppercase font-bold text-[#54656f] mb-1">Confirmar Nueva Contraseña</label>
+                    <input type="password" id="confirm-password" required minlength="4" class="w-full bg-[#f0f2f5] border border-slate-300 rounded-lg p-2 text-sm text-[#111b21] focus:outline-none focus:bg-white focus:border-[#008069]">
                 </div>
-                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2 rounded text-xs transition">Guardar Nueva Contraseña</button>
+                <button type="submit" class="w-full bg-[#008069] hover:bg-[#017561] text-white font-bold p-2.5 rounded-lg text-xs transition shadow-sm">Guardar Nueva Contraseña</button>
             </form>
 
             <!-- Opción de Huella Digital disponible para todos los usuarios -->
-            <div id="biometric-box" class="border-t border-slate-700 pt-3 space-y-2">
-                <p class="text-xs font-bold text-slate-200">Acceso Biométrico (Huella Digital)</p>
-                <p id="biometric-status" class="text-[11px] text-slate-400"></p>
-                <button type="button" onclick="registrarHuellaDigital()" class="w-full bg-slate-700 hover:bg-slate-600 text-amber-300 border border-amber-500/40 font-bold p-2 rounded text-xs transition">
+            <div id="biometric-box" class="border-t border-slate-200 pt-3 space-y-2">
+                <p class="text-xs font-bold text-[#111b21]">Acceso Biométrico (Huella Digital)</p>
+                <p id="biometric-status" class="text-[11px] text-[#54656f]"></p>
+                <button type="button" onclick="registrarHuellaDigital()" class="w-full bg-[#e7fce3] hover:bg-[#d9fdd3] text-[#005c4b] border border-[#00a884]/40 font-bold p-2 rounded-lg text-xs transition">
                     Configurar / Actualizar Huella Digital
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- Modal de Comentario de Seguimiento -->
+    <div id="comment-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-[1px] flex items-center justify-center p-4 no-print">
+        <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                <h4 class="text-sm font-bold text-[#008069]">Agregar Comentario de Seguimiento</h4>
+                <button type="button" onclick="cerrarModalComentario()" class="text-xs text-[#54656f] hover:text-[#111b21] bg-[#f0f2f5] border border-slate-300 px-2.5 py-1 rounded-lg font-semibold">Cerrar</button>
+            </div>
+            <form id="comment-form" onsubmit="guardarComentarioModal(event)" class="space-y-3">
+                <div>
+                    <label for="comment-input" class="block text-xs uppercase font-bold text-[#54656f] mb-1">Comentario u observación</label>
+                    <textarea id="comment-input" rows="3" required placeholder="Escriba su comentario aquí..." class="w-full bg-[#f0f2f5] border border-slate-300 rounded-lg p-2 text-sm text-[#111b21] focus:outline-none focus:bg-white focus:border-[#008069]"></textarea>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="cerrarModalComentario()" class="bg-[#f0f2f5] hover:bg-slate-200 text-[#111b21] border border-slate-300 px-3 py-2 rounded-lg text-xs font-semibold">Cancelar</button>
+                    <button type="submit" id="btn-guardar-comentario" class="bg-[#008069] hover:bg-[#017561] text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm">Guardar Comentario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Vista exclusiva para impresión / guardado en PDF con todas las pestañas desglosadas -->
     <div id="print-report" class="p-6 max-w-4xl mx-auto">
-        <div style="display:flex; align-items:center; gap:14px; border-bottom:2px solid #1e293b; padding-bottom:12px; margin-bottom:18px;">
+        <div style="display:flex; align-items:center; gap:14px; border-bottom:2px solid #008069; padding-bottom:12px; margin-bottom:18px;">
             <img src="escudo-mppd.png" alt="Escudo MPPD" style="width:52px; height:52px; object-fit:contain;" onerror="this.style.display='none'">
             <div>
                 <div style="font-size:11px; font-weight:700; text-transform:uppercase;">República Bolivariana de Venezuela</div>
@@ -253,9 +282,9 @@
     </div>
 
     <!-- Footer -->
-    <footer class="text-center p-4 text-xs text-slate-500 border-t border-slate-800 no-print space-y-1">
+    <footer class="text-center p-4 text-xs text-[#54656f] bg-white border-t border-slate-200 no-print space-y-1">
         <div>Ministerio del Poder Popular para la Defensa &copy; 2026</div>
-        <div class="text-[10px] text-slate-500/80">Aplicación creada por el T.N. Robinson García López</div>
+        <div class="text-[10px] text-slate-400">Aplicación creada por el T.N. Robinson García López</div>
     </footer>
 
     <!-- Registro del Service Worker para PWA -->
@@ -292,6 +321,34 @@
         const TIEMPO_INACTIVIDAD_MS = 3 * 60 * 1000;
         let temporizadorInactividad = null;
         let audioCtx = null;
+        let docIdComentarioPendiente = null;
+        let snapshotInicialCargado = false;
+        let idsNotificados = new Set();
+
+        function escaparHTML(valor) {
+            return String(valor ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        async function hashSHA256(texto) {
+            if (window.crypto && window.crypto.subtle) {
+                const datos = new TextEncoder().encode(texto);
+                const digest = await window.crypto.subtle.digest('SHA-256', datos);
+                return Array.from(new Uint8Array(digest))
+                    .map(b => b.toString(16).padStart(2, '0'))
+                    .join('');
+            }
+            let h = 0;
+            for (let i = 0; i < texto.length; i++) {
+                h = ((h << 5) - h) + texto.charCodeAt(i);
+                h |= 0;
+            }
+            return `fb_${Math.abs(h)}`;
+        }
 
         function reproducirSonidoIngresoYVibrar() {
             try {
@@ -339,8 +396,146 @@
             } catch (e) {}
         }
 
+        function reproducirTonoNuevoDocumento() {
+            try {
+                if (navigator.vibrate) {
+                    navigator.vibrate([120, 60, 120]);
+                }
+            } catch (e) {}
+
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContextClass) return;
+                if (!audioCtx) audioCtx = new AudioContextClass();
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const ahora = audioCtx.currentTime;
+                const notas = [880, 1174.66];
+
+                notas.forEach((frec, idx) => {
+                    const inicio = ahora + idx * 0.12;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(frec, inicio);
+
+                    gain.gain.setValueAtTime(0.001, inicio);
+                    gain.gain.exponentialRampToValueAtTime(0.16, inicio + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, inicio + 0.16);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(inicio);
+                    osc.stop(inicio + 0.17);
+                });
+            } catch (e) {}
+        }
+
+        async function solicitarPermisoNotificaciones(mostrarAviso = false) {
+            if (!('Notification' in window)) {
+                if (mostrarAviso) alert('Este navegador no soporta notificaciones flotantes del sistema.');
+                return 'unsupported';
+            }
+            if (Notification.permission === 'granted') {
+                if (mostrarAviso) alert('Las notificaciones flotantes ya están activadas.');
+                return 'granted';
+            }
+            if (Notification.permission === 'denied') {
+                if (mostrarAviso) alert('Las notificaciones están bloqueadas en el navegador. Actívelas desde la configuración del sitio.');
+                return 'denied';
+            }
+            try {
+                const permiso = await Notification.requestPermission();
+                if (mostrarAviso) {
+                    alert(permiso === 'granted'
+                        ? 'Notificaciones flotantes activadas.'
+                        : 'No se otorgó permiso para notificaciones flotantes.');
+                }
+                return permiso;
+            } catch (e) {
+                console.warn('Error solicitando permiso de notificación:', e);
+                return 'default';
+            }
+        }
+
+        window.activarNotificacionesManual = async function() {
+            await solicitarPermisoNotificaciones(true);
+            actualizarBadgeAppYHeader();
+        };
+
+        async function dispararNotificacionFlotante(item) {
+            reproducirTonoNuevoDocumento();
+
+            if (!('Notification' in window) || Notification.permission !== 'granted') {
+                return;
+            }
+
+            const categoriaLabel = NOMBRES_CATEGORIAS[item.categoria] || 'Control de Gestión';
+            const titulo = `Nuevo documento • ${categoriaLabel}`;
+            const cuerpo = `${item.remitente || 'Remitente'} — ${item.contenido || 'Sin asunto'}`;
+
+            try {
+                if ('serviceWorker' in navigator) {
+                    const reg = await navigator.serviceWorker.ready;
+                    if (reg && typeof reg.showNotification === 'function') {
+                        await reg.showNotification(titulo, {
+                            body: cuerpo,
+                            icon: './icono-mppd.png',
+                            badge: './icono-mppd.png',
+                            tag: `mppd-doc-${item.firestoreId || item.timestamp}`,
+                            renotify: true,
+                            vibrate: [120, 60, 120]
+                        });
+                        return;
+                    }
+                }
+                new Notification(titulo, {
+                    body: cuerpo,
+                    icon: './icono-mppd.png',
+                    tag: `mppd-doc-${item.firestoreId || item.timestamp}`
+                });
+            } catch (e) {
+                console.warn('No se pudo mostrar notificación flotante:', e);
+            }
+        }
+
+        async function actualizarBadgeAppYHeader() {
+            const badgeHeader = document.getElementById('badge-nuevos-docs');
+            if (!currentUser || !recibeNotificaciones(currentUser)) {
+                if (badgeHeader) badgeHeader.classList.add('hidden');
+                if (navigator.clearAppBadge) {
+                    navigator.clearAppBadge().catch(() => {});
+                }
+                return;
+            }
+
+            const ultimaVez = ultimaRevision[currentUser.id] || 0;
+            const nuevosCount = documentos.filter(item => (item.timestamp || 0) > ultimaVez).length;
+
+            if (badgeHeader) {
+                if (nuevosCount > 0) {
+                    badgeHeader.innerText = String(nuevosCount);
+                    badgeHeader.classList.remove('hidden');
+                } else {
+                    badgeHeader.classList.add('hidden');
+                }
+            }
+
+            if (navigator.setAppBadge && navigator.clearAppBadge) {
+                try {
+                    if (nuevosCount > 0) {
+                        await navigator.setAppBadge(nuevosCount);
+                    } else {
+                        await navigator.clearAppBadge();
+                    }
+                } catch (e) {}
+            }
+        }
+
         function normalizarTextoSinAcentos(texto) {
-            return texto
+            return String(texto ?? '')
                 .normalize('NFD')
                 .replace(/[\u0300-\u036f]/g, '')
                 .toLowerCase()
@@ -348,7 +543,7 @@
         }
 
         function formatearNombreTitulo(texto) {
-            return texto
+            return String(texto ?? '')
                 .toLowerCase()
                 .replace(/(^|\s|[.\-])([a-záéíóúñ])/g, (_, sep, letra) => `${sep}${letra.toUpperCase()}`);
         }
@@ -365,27 +560,29 @@
             { id: 'Dgarcia', name: 'Dgarcia', role: 'profesional', defaultPassword: '1234', allowsBiometrics: true }
         ];
 
-        let passwordsPersonalizadas = JSON.parse(localStorage.getItem('mppd_passwords')) || {};
+        let passwordHashesPersonalizados = JSON.parse(localStorage.getItem('mppd_password_hashes')) || {};
         let huellasRegistradas = JSON.parse(localStorage.getItem('mppd_biometrics')) || {};
-
-        function obtenerUsuariosActivos() {
-            return USUARIOS_BASE.map(u => ({
-                ...u,
-                password: passwordsPersonalizadas[u.id] || u.defaultPassword
-            }));
-        }
 
         function buscarUsuarioPorEntrada(entrada) {
             const limpia = normalizarTextoSinAcentos(entrada).replace(/[^a-z0-9]/g, '');
-            const lista = obtenerUsuariosActivos();
-            return lista.find(u => {
+            if (!limpia) return null;
+            return USUARIOS_BASE.find(u => {
                 const idLimpio = normalizarTextoSinAcentos(u.id).replace(/[^a-z0-9]/g, '');
                 const nameLimpio = normalizarTextoSinAcentos(u.name).replace(/[^a-z0-9]/g, '');
                 if (idLimpio === limpia || nameLimpio === limpia) return true;
                 if (u.id === 'subdireccion' && (limpia === 'sup1' || limpia === 'sub1')) return true;
                 if (u.id === 'direccion' && (limpia === 'sup2' || limpia === 'sub2')) return true;
                 return false;
-            });
+            }) || null;
+        }
+
+        async function verificarPasswordUsuario(usuario, passwordIngresada) {
+            const hashIngresado = await hashSHA256(passwordIngresada);
+            if (passwordHashesPersonalizados[usuario.id]) {
+                return passwordHashesPersonalizados[usuario.id] === hashIngresado;
+            }
+            const hashPorDefecto = await hashSHA256(usuario.defaultPassword);
+            return hashPorDefecto === hashIngresado;
         }
 
         const NOMBRES_CATEGORIAS = {
@@ -406,23 +603,20 @@
                 clearTimeout(temporizadorInactividad);
                 temporizadorInactividad = null;
             }
-            if (unsubscribe) unsubscribe();
+            if (unsubscribe) {
+                unsubscribe();
+                unsubscribe = null;
+            }
             currentUser = null;
             localStorage.removeItem('mppd_user');
 
             try {
                 if ('serviceWorker' in navigator) {
                     const regs = await navigator.serviceWorker.getRegistrations();
-                    for (const reg of regs) {
-                        await reg.update();
-                    }
-                }
-                if (window.caches) {
-                    const keys = await caches.keys();
-                    await Promise.all(keys.map(k => caches.delete(k)));
+                    await Promise.all(regs.map(reg => reg.update()));
                 }
             } catch (e) {
-                console.warn('Error actualizando caché:', e);
+                console.warn('Error actualizando Service Worker:', e);
             }
 
             window.location.reload();
@@ -453,7 +647,7 @@
             }
             const ultimoBioId = localStorage.getItem('mppd_last_biometric_user');
             if (ultimoBioId && huellasRegistradas[ultimoBioId]) {
-                return obtenerUsuariosActivos().find(u => u.id === ultimoBioId) || null;
+                return USUARIOS_BASE.find(u => u.id === ultimoBioId) || null;
             }
             return null;
         }
@@ -478,6 +672,7 @@
         });
 
         window.cambiarPestana = function(categoria) {
+            if (!NOMBRES_CATEGORIAS[categoria]) return;
             pestanaActual = categoria;
             actualizarEstilosPestanas();
             renderizarDocumentos();
@@ -508,10 +703,16 @@
             const categorias = Object.keys(NOMBRES_CATEGORIAS);
             categorias.forEach(cat => {
                 const btn = document.getElementById(`tab-${cat}`);
+                const badge = document.getElementById(`count-${cat}`);
+                if (!btn) return;
                 if (cat === pestanaActual) {
-                    btn.className = "tab-btn flex items-center justify-between px-3 py-3 rounded-lg text-xs font-bold transition text-left bg-amber-500 text-slate-950 shadow-md";
+                    btn.className = "tab-btn flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-bold transition text-left bg-[#008069] text-white shadow-sm";
+                    if (badge) badge.className = "ml-2 px-2 py-0.5 rounded-full text-[11px] bg-white text-[#008069] font-extrabold";
+                    btn.setAttribute('aria-selected', 'true');
                 } else {
-                    btn.className = "tab-btn flex items-center justify-between px-3 py-3 rounded-lg text-xs font-bold transition text-left bg-slate-900/60 text-slate-300 hover:bg-slate-700";
+                    btn.className = "tab-btn flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-bold transition text-left bg-[#f0f2f5] text-[#111b21] hover:bg-[#e7fce3] hover:text-[#005c4b]";
+                    if (badge) badge.className = "ml-2 px-2 py-0.5 rounded-full text-[11px] bg-white text-[#54656f] border border-slate-200 font-bold";
+                    btn.setAttribute('aria-selected', 'false');
                 }
             });
 
@@ -520,23 +721,37 @@
             document.getElementById('tabla-categoria-titulo').innerText = titulo;
         }
 
-        window.manejarLogin = function(e) {
+        window.manejarLogin = async function(e) {
             e.preventDefault();
+            const btnLogin = document.getElementById('btn-login');
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value.trim();
 
-            const encontrado = buscarUsuarioPorEntrada(u);
-            if (encontrado && encontrado.password === p) {
-                currentUser = {
-                    id: encontrado.id,
-                    name: encontrado.name,
-                    role: encontrado.role,
-                    allowsBiometrics: encontrado.allowsBiometrics
-                };
-                localStorage.setItem('mppd_user', JSON.stringify(currentUser));
-                mostrarDashboard(true);
-            } else {
-                alert('Credenciales inválidas. Verifique usuario o contraseña.');
+            btnLogin.disabled = true;
+            btnLogin.innerText = "Verificando...";
+
+            try {
+                const encontrado = buscarUsuarioPorEntrada(u);
+                const claveValida = encontrado ? await verificarPasswordUsuario(encontrado, p) : false;
+
+                if (encontrado && claveValida) {
+                    currentUser = {
+                        id: encontrado.id,
+                        name: encontrado.name,
+                        role: encontrado.role,
+                        allowsBiometrics: encontrado.allowsBiometrics
+                    };
+                    localStorage.setItem('mppd_user', JSON.stringify(currentUser));
+                    if (recibeNotificaciones(currentUser)) {
+                        await solicitarPermisoNotificaciones(false);
+                    }
+                    mostrarDashboard(true);
+                } else {
+                    alert('Credenciales inválidas. Verifique usuario o contraseña.');
+                }
+            } finally {
+                btnLogin.disabled = false;
+                btnLogin.innerText = "Ingresar";
             }
         };
 
@@ -624,6 +839,9 @@
                     };
                     localStorage.setItem('mppd_user', JSON.stringify(currentUser));
                     localStorage.setItem('mppd_last_biometric_user', objetivo.id);
+                    if (recibeNotificaciones(currentUser)) {
+                        await solicitarPermisoNotificaciones(false);
+                    }
                     mostrarDashboard(true);
                 }
             } catch (error) {
@@ -658,7 +876,7 @@
             document.getElementById('security-modal').classList.add('hidden');
         };
 
-        window.cambiarContrasena = function(e) {
+        window.cambiarContrasena = async function(e) {
             e.preventDefault();
             if (!currentUser) return;
             const nueva = document.getElementById('new-password').value.trim();
@@ -671,8 +889,9 @@
                 alert('Las contraseñas no coinciden.');
                 return;
             }
-            passwordsPersonalizadas[currentUser.id] = nueva;
-            localStorage.setItem('mppd_passwords', JSON.stringify(passwordsPersonalizadas));
+            const nuevoHash = await hashSHA256(nueva);
+            passwordHashesPersonalizados[currentUser.id] = nuevoHash;
+            localStorage.setItem('mppd_password_hashes', JSON.stringify(passwordHashesPersonalizados));
             cerrarModalSeguridad();
             alert('Contraseña actualizada correctamente.');
         };
@@ -682,9 +901,17 @@
                 clearTimeout(temporizadorInactividad);
                 temporizadorInactividad = null;
             }
-            if (unsubscribe) unsubscribe();
+            if (unsubscribe) {
+                unsubscribe();
+                unsubscribe = null;
+            }
+            snapshotInicialCargado = false;
+            idsNotificados.clear();
             currentUser = null;
             localStorage.removeItem('mppd_user');
+            if (navigator.clearAppBadge) {
+                navigator.clearAppBadge().catch(() => {});
+            }
             document.getElementById('dashboard-section').classList.add('hidden');
             document.getElementById('user-info').classList.add('hidden');
             document.getElementById('login-section').classList.remove('hidden');
@@ -715,20 +942,58 @@
         }
 
         function escucharCambiosEnTiempoReal() {
-            if (unsubscribe) unsubscribe();
+            if (unsubscribe) {
+                unsubscribe();
+                unsubscribe = null;
+            }
+            snapshotInicialCargado = false;
+            document.getElementById('total-docs').innerText = "Cargando...";
             const q = query(docsRef, orderBy("timestamp", "desc"));
 
             unsubscribe = onSnapshot(q, (snapshot) => {
-                documentos = [];
+                const nuevosDocumentos = [];
+                const agregadosEnSnapshot = [];
+
                 snapshot.forEach((docSnap) => {
-                    documentos.push({ firestoreId: docSnap.id, ...docSnap.data() });
+                    const data = { firestoreId: docSnap.id, ...docSnap.data() };
+                    nuevosDocumentos.push(data);
                 });
+
+                if (snapshotInicialCargado && currentUser && recibeNotificaciones(currentUser)) {
+                    const ultimaVez = ultimaRevision[currentUser.id] || 0;
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === 'added') {
+                            const data = { firestoreId: change.doc.id, ...change.doc.data() };
+                            if ((data.timestamp || 0) > ultimaVez && !idsNotificados.has(data.firestoreId)) {
+                                idsNotificados.add(data.firestoreId);
+                                agregadosEnSnapshot.push(data);
+                            }
+                        }
+                    });
+                }
+
+                documentos = nuevosDocumentos;
+                snapshotInicialCargado = true;
+
                 actualizarContadoresPestanas();
                 verificarNotificaciones();
+                actualizarBadgeAppYHeader();
                 renderizarDocumentos();
+
+                if (agregadosEnSnapshot.length > 0) {
+                    const ultimoNuevo = agregadosEnSnapshot[0];
+                    const textoBanner = document.getElementById('notification-text');
+                    if (textoBanner) {
+                        textoBanner.innerText = agregadosEnSnapshot.length === 1
+                            ? `Nuevo documento de ${ultimoNuevo.remitente || 'un remitente'} agregado en "${NOMBRES_CATEGORIAS[ultimoNuevo.categoria] || 'Control de Gestión'}".`
+                            : `Se agregaron ${agregadosEnSnapshot.length} nuevos documentos en el sistema.`;
+                    }
+                    dispararNotificacionFlotante(ultimoNuevo);
+                }
             }, (error) => {
                 console.error("Error conectando a Firestore:", error);
                 document.getElementById('total-docs').innerText = "Error de conexión";
+                document.getElementById('documents-table-body').innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-600">Error al sincronizar con la nube. Verifique su conexión o permisos de Firestore.</td></tr>`;
             });
         }
 
@@ -740,11 +1005,9 @@
                 'conocimiento_fines': 0
             };
 
-            documentos.forEach(doc => {
-                const cat = doc.categoria || 'enviar_mppd';
-                if (conteos.hasOwnProperty(cat)) {
-                    conteos[cat]++;
-                }
+            documentos.forEach(item => {
+                const cat = NOMBRES_CATEGORIAS[item.categoria] ? item.categoria : 'enviar_mppd';
+                conteos[cat]++;
             });
 
             Object.keys(conteos).forEach(cat => {
@@ -762,8 +1025,12 @@
             const banner = document.getElementById('notification-banner');
             if (currentUser && recibeNotificaciones(currentUser)) {
                 const ultimaVez = ultimaRevision[currentUser.id] || 0;
-                const tieneNuevos = documentos.some(doc => doc.timestamp > ultimaVez);
-                if (tieneNuevos && documentos.length > 0) {
+                const nuevosItems = documentos.filter(item => (item.timestamp || 0) > ultimaVez);
+                if (nuevosItems.length > 0) {
+                    const textoBanner = document.getElementById('notification-text');
+                    if (textoBanner) {
+                        textoBanner.innerText = `Hay ${nuevosItems.length} ${nuevosItems.length === 1 ? 'nuevo documento agregado' : 'nuevos documentos agregados'} desde su última revisión.`;
+                    }
                     banner.classList.remove('hidden');
                 } else {
                     banner.classList.add('hidden');
@@ -778,6 +1045,7 @@
             ultimaRevision[currentUser.id] = Date.now();
             localStorage.setItem('mppd_ult_revision', JSON.stringify(ultimaRevision));
             document.getElementById('notification-banner').classList.add('hidden');
+            actualizarBadgeAppYHeader();
         };
 
         window.formatearInputFecha = function(input) {
@@ -790,22 +1058,47 @@
             input.value = v;
         };
 
+        function esFechaValidaDDMMAAAA(fechaStr) {
+            const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(fechaStr);
+            if (!match) return false;
+            const dia = parseInt(match[1], 10);
+            const mes = parseInt(match[2], 10);
+            const anio = parseInt(match[3], 10);
+            if (mes < 1 || mes > 12 || dia < 1 || dia > 31 || anio < 1900 || anio > 2100) return false;
+            const fecha = new Date(anio, mes - 1, dia);
+            return fecha.getFullYear() === anio && fecha.getMonth() === mes - 1 && fecha.getDate() === dia;
+        }
+
         window.agregarDocumento = async function(e) {
             e.preventDefault();
+            if (!currentUser || (currentUser.role !== 'jefe' && currentUser.role !== 'profesional')) return;
+
             const btn = document.getElementById('btn-guardar');
+            const remitente = document.getElementById('remitente').value.trim();
+            const contenido = document.getElementById('contenido').value.trim();
+            const fechaTexto = document.getElementById('fecha').value.trim();
+            const observacion = document.getElementById('observacion').value.trim();
+
+            if (!remitente || !contenido || !observacion) {
+                alert("Complete todos los campos obligatorios.");
+                return;
+            }
+            if (!esFechaValidaDDMMAAAA(fechaTexto)) {
+                alert("Ingrese una fecha válida en formato DD/MM/AAAA.");
+                return;
+            }
+
             btn.disabled = true;
             btn.innerText = "Guardando...";
-
-            const fechaTexto = document.getElementById('fecha').value;
 
             try {
                 await addDoc(docsRef, {
                     timestamp: Date.now(),
                     categoria: pestanaActual,
-                    remitente: document.getElementById('remitente').value,
-                    contenido: document.getElementById('contenido').value,
+                    remitente,
+                    contenido,
                     fecha: fechaTexto,
-                    observacion: document.getElementById('observacion').value,
+                    observacion,
                     creadoPor: currentUser.name,
                     creadoEl: new Date().toLocaleString(),
                     comentarios: []
@@ -820,69 +1113,97 @@
             }
         };
 
-        window.agregarComentario = async function(firestoreId) {
-            const textoComentario = prompt('Ingrese su comentario u observación para este registro:');
-            if (textoComentario && textoComentario.trim() !== '') {
-                try {
-                    const docRef = doc(db, "documentos_mppd", firestoreId);
-                    await updateDoc(docRef, {
-                        comentarios: arrayUnion({
-                            autor: currentUser.name,
-                            texto: textoComentario.trim(),
-                            fecha: new Date().toLocaleString()
-                        })
-                    });
-                } catch (error) {
-                    alert("No se pudo guardar el comentario.");
-                    console.error(error);
-                }
+        window.agregarComentario = function(firestoreId) {
+            if (!currentUser || (currentUser.role !== 'jefe' && currentUser.role !== 'superior')) return;
+            docIdComentarioPendiente = firestoreId;
+            document.getElementById('comment-form').reset();
+            document.getElementById('comment-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('comment-input')?.focus(), 50);
+        };
+
+        window.cerrarModalComentario = function() {
+            docIdComentarioPendiente = null;
+            document.getElementById('comment-modal').classList.add('hidden');
+        };
+
+        window.guardarComentarioModal = async function(e) {
+            e.preventDefault();
+            if (!docIdComentarioPendiente || !currentUser) return;
+
+            const input = document.getElementById('comment-input');
+            const btn = document.getElementById('btn-guardar-comentario');
+            const texto = input.value.trim();
+            if (!texto) return;
+
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
+
+            try {
+                const docRef = doc(db, "documentos_mppd", docIdComentarioPendiente);
+                await updateDoc(docRef, {
+                    comentarios: arrayUnion({
+                        autor: currentUser.name,
+                        texto,
+                        fecha: new Date().toLocaleString()
+                    })
+                });
+                cerrarModalComentario();
+            } catch (error) {
+                alert("No se pudo guardar el comentario.");
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Guardar Comentario";
             }
         };
 
         window.eliminarDoc = async function(firestoreId) {
+            if (!currentUser || (currentUser.role !== 'jefe' && currentUser.role !== 'profesional')) return;
             if (confirm('¿Desea eliminar este registro de la nube de forma permanente?')) {
                 try {
                     const registroEliminado = documentos.find(d => d.firestoreId === firestoreId);
                     await deleteDoc(doc(db, "documentos_mppd", firestoreId));
                     if (registroEliminado) {
+                        const { firestoreId: _, ...datosSinId } = registroEliminado;
                         await addDoc(auditoriaRef, {
                             accion: 'ELIMINADO',
                             eliminadoPor: currentUser.name,
                             fechaEliminacion: new Date().toLocaleString(),
                             timestamp: Date.now(),
-                            registroOriginal: registroEliminado
+                            registroOriginal: datosSinId
                         });
                     }
                 } catch (error) {
                     console.error("Error al eliminar:", error);
+                    alert("No se pudo eliminar el registro.");
                 }
             }
         };
 
         function construirTextoDesglosado() {
             const fechaActual = new Date().toLocaleString();
-            let lineas = [
+            const lineas = [
                 `CONTROL DE GESTIÓN - MPPD`,
                 `Fecha de reporte: ${fechaActual}`,
                 `========================================`
             ];
 
             Object.entries(NOMBRES_CATEGORIAS).forEach(([clave, titulo]) => {
-                const items = documentos.filter(d => (d.categoria || 'enviar_mppd') === clave);
+                const items = documentos.filter(d => (NOMBRES_CATEGORIAS[d.categoria] ? d.categoria : 'enviar_mppd') === clave);
                 lineas.push(`\n📁 ${titulo.toUpperCase()} (${items.length})`);
                 lineas.push(`----------------------------------------`);
 
                 if (items.length === 0) {
                     lineas.push(`Sin registros.`);
                 } else {
-                    items.forEach((doc, idx) => {
-                        lineas.push(`${idx + 1}. Remitente: ${doc.remitente}`);
-                        lineas.push(`   Contenido: ${doc.contenido}`);
-                        lineas.push(`   Fecha: ${doc.fecha}`);
-                        lineas.push(`   Observación: ${doc.observacion || ''}`);
-                        if (doc.comentarios && doc.comentarios.length > 0) {
-                            doc.comentarios.forEach(c => {
-                                lineas.push(`   • Comentario (${c.autor}): ${c.texto}`);
+                    items.forEach((item, idx) => {
+                        lineas.push(`${idx + 1}. Remitente: ${item.remitente || ''}`);
+                        lineas.push(`   Contenido: ${item.contenido || ''}`);
+                        lineas.push(`   Fecha: ${item.fecha || ''}`);
+                        lineas.push(`   Observación: ${item.observacion || ''}`);
+                        if (Array.isArray(item.comentarios) && item.comentarios.length > 0) {
+                            item.comentarios.forEach(c => {
+                                lineas.push(`   • Comentario (${c.autor || ''}): ${c.texto || ''}`);
                             });
                         }
                     });
@@ -917,11 +1238,11 @@
             let html = '';
 
             Object.entries(NOMBRES_CATEGORIAS).forEach(([clave, titulo]) => {
-                const items = documentos.filter(d => (d.categoria || 'enviar_mppd') === clave);
+                const items = documentos.filter(d => (NOMBRES_CATEGORIAS[d.categoria] ? d.categoria : 'enviar_mppd') === clave);
                 html += `
                     <div style="margin-bottom:22px; page-break-inside:avoid;">
-                        <h3 style="font-size:13px; font-weight:800; background:#f1f5f9; color:#0f172a; padding:6px 10px; border-left:4px solid #d97706; margin-bottom:8px;">
-                            ${titulo} (${items.length})
+                        <h3 style="font-size:13px; font-weight:800; background:#e7fce3; color:#005c4b; padding:6px 10px; border-left:4px solid #008069; margin-bottom:8px;">
+                            ${escaparHTML(titulo)} (${items.length})
                         </h3>
                 `;
 
@@ -931,7 +1252,7 @@
                     html += `
                         <table style="width:100%; border-collapse:collapse; font-size:11px;">
                             <thead>
-                                <tr style="background:#e2e8f0; color:#0f172a; text-align:left;">
+                                <tr style="background:#f0f2f5; color:#111b21; text-align:left;">
                                     <th style="border:1px solid #cbd5e1; padding:6px;">Remitente</th>
                                     <th style="border:1px solid #cbd5e1; padding:6px;">Contenido</th>
                                     <th style="border:1px solid #cbd5e1; padding:6px;">Fecha</th>
@@ -940,20 +1261,20 @@
                             </thead>
                             <tbody>
                     `;
-                    items.forEach(doc => {
-                        let obsHtml = `<div>${doc.observacion || ''}</div>`;
-                        if (doc.comentarios && doc.comentarios.length > 0) {
-                            doc.comentarios.forEach(c => {
+                    items.forEach(item => {
+                        let obsHtml = `<div>${escaparHTML(item.observacion || '')}</div>`;
+                        if (Array.isArray(item.comentarios) && item.comentarios.length > 0) {
+                            item.comentarios.forEach(c => {
                                 obsHtml += `<div style="margin-top:4px; padding-top:4px; border-top:1px dashed #cbd5e1; font-size:10px; color:#334155;">
-                                    <strong>${c.autor}:</strong> ${c.texto} (${c.fecha})
+                                    <strong>${escaparHTML(c.autor || '')}:</strong> ${escaparHTML(c.texto || '')} (${escaparHTML(c.fecha || '')})
                                 </div>`;
                             });
                         }
                         html += `
                             <tr>
-                                <td style="border:1px solid #cbd5e1; padding:6px; font-weight:700;">${doc.remitente}</td>
-                                <td style="border:1px solid #cbd5e1; padding:6px;">${doc.contenido}</td>
-                                <td style="border:1px solid #cbd5e1; padding:6px; white-space:nowrap;">${doc.fecha}</td>
+                                <td style="border:1px solid #cbd5e1; padding:6px; font-weight:700;">${escaparHTML(item.remitente || '')}</td>
+                                <td style="border:1px solid #cbd5e1; padding:6px;">${escaparHTML(item.contenido || '')}</td>
+                                <td style="border:1px solid #cbd5e1; padding:6px; white-space:nowrap;">${escaparHTML(item.fecha || '')}</td>
                                 <td style="border:1px solid #cbd5e1; padding:6px;">${obsHtml}</td>
                             </tr>
                         `;
@@ -972,22 +1293,22 @@
             const tbody = document.getElementById('documents-table-body');
             tbody.innerHTML = '';
 
-            const docsPorPestana = documentos.filter(doc => (doc.categoria || 'enviar_mppd') === pestanaActual);
+            const docsPorPestana = documentos.filter(item => (NOMBRES_CATEGORIAS[item.categoria] ? item.categoria : 'enviar_mppd') === pestanaActual);
             const termino = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
             const filtroComentarios = document.getElementById('filter-comments')?.value || 'todos';
 
-            const docsFiltrados = docsPorPestana.filter(doc => {
-                const tieneComentarios = Array.isArray(doc.comentarios) && doc.comentarios.length > 0;
+            const docsFiltrados = docsPorPestana.filter(item => {
+                const tieneComentarios = Array.isArray(item.comentarios) && item.comentarios.length > 0;
                 if (filtroComentarios === 'con_comentarios' && !tieneComentarios) return false;
                 if (filtroComentarios === 'sin_comentarios' && tieneComentarios) return false;
 
                 if (!termino) return true;
 
                 const textoComentarios = tieneComentarios
-                    ? doc.comentarios.map(c => `${c.autor} ${c.texto}`).join(' ')
+                    ? item.comentarios.map(c => `${c.autor || ''} ${c.texto || ''}`).join(' ')
                     : '';
 
-                const bloqueBusqueda = `${doc.remitente || ''} ${doc.contenido || ''} ${doc.fecha || ''} ${doc.observacion || ''} ${doc.creadoPor || ''} ${textoComentarios}`.toLowerCase();
+                const bloqueBusqueda = `${item.remitente || ''} ${item.contenido || ''} ${item.fecha || ''} ${item.observacion || ''} ${item.creadoPor || ''} ${textoComentarios}`.toLowerCase();
                 return bloqueBusqueda.includes(termino);
             });
 
@@ -998,30 +1319,30 @@
             }
 
             if (docsPorPestana.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">No hay registros en "${NOMBRES_CATEGORIAS[pestanaActual]}".</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-[#54656f]">No hay registros en "${escaparHTML(NOMBRES_CATEGORIAS[pestanaActual])}".</td></tr>`;
                 return;
             }
 
             if (docsFiltrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">No se encontraron coincidencias con el filtro aplicado.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-[#54656f]">No se encontraron coincidencias con el filtro aplicado.</td></tr>`;
                 return;
             }
 
-            docsFiltrados.forEach(doc => {
+            docsFiltrados.forEach(item => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-750 transition";
+                tr.className = "hover:bg-[#f0f2f5]/70 transition";
 
-                const infoAutor = doc.creadoPor
-                    ? `<div class="text-[10px] text-slate-400 font-normal mt-0.5">Cargado por: ${doc.creadoPor}${doc.creadoEl ? ` • ${doc.creadoEl}` : ''}</div>`
+                const infoAutor = item.creadoPor
+                    ? `<div class="text-[10px] text-[#54656f] font-normal mt-0.5">Cargado por: ${escaparHTML(item.creadoPor)}${item.creadoEl ? ` • ${escaparHTML(item.creadoEl)}` : ''}</div>`
                     : '';
 
-                let htmlComentarios = `<div class="text-xs text-slate-300">${doc.observacion || ''}</div>`;
-                if (doc.comentarios && doc.comentarios.length > 0) {
-                    htmlComentarios += `<div class="mt-2 space-y-1 border-t border-slate-700 pt-2">`;
-                    doc.comentarios.forEach(c => {
-                        htmlComentarios += `<div class="text-xs bg-slate-900/60 p-1.5 rounded border border-slate-700/50">
-                            <span class="text-amber-400 font-semibold">${c.autor}:</span> ${c.texto}
-                            <span class="text-[10px] text-slate-500 block">${c.fecha}</span>
+                let htmlComentarios = `<div class="text-xs text-[#111b21]">${escaparHTML(item.observacion || '')}</div>`;
+                if (Array.isArray(item.comentarios) && item.comentarios.length > 0) {
+                    htmlComentarios += `<div class="mt-2 space-y-1.5 border-t border-slate-200 pt-2">`;
+                    item.comentarios.forEach(c => {
+                        htmlComentarios += `<div class="text-xs bg-[#e7fce3] text-[#111b21] p-2 rounded-xl border border-[#00a884]/25">
+                            <span class="text-[#008069] font-bold">${escaparHTML(c.autor || '')}:</span> ${escaparHTML(c.texto || '')}
+                            <span class="text-[10px] text-[#54656f] block mt-0.5">${escaparHTML(c.fecha || '')}</span>
                         </div>`;
                     });
                     htmlComentarios += `</div>`;
@@ -1030,23 +1351,23 @@
                 let htmlAcciones = `<div class="flex items-center justify-center space-x-2 flex-wrap gap-1.5">`;
 
                 if (currentUser.role === 'jefe' || currentUser.role === 'superior') {
-                    htmlAcciones += `<button onclick="agregarComentario('${doc.firestoreId}')" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-3 py-1.5 text-xs rounded transition">Comentar</button>`;
+                    htmlAcciones += `<button type="button" onclick="agregarComentario('${escaparHTML(item.firestoreId)}')" class="bg-[#e7fce3] hover:bg-[#d9fdd3] text-[#005c4b] border border-[#00a884]/40 px-3 py-1.5 text-xs font-bold rounded-lg transition">Comentar</button>`;
                 }
 
                 if (currentUser.role === 'jefe' || currentUser.role === 'profesional') {
                     htmlAcciones += `
-                        <button onclick="eliminarDoc('${doc.firestoreId}')" class="bg-red-900/40 hover:bg-red-900 text-red-300 px-3 py-1.5 text-xs rounded transition">X</button>
+                        <button type="button" onclick="eliminarDoc('${escaparHTML(item.firestoreId)}')" class="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-3 py-1.5 text-xs font-bold rounded-lg transition">X</button>
                     `;
                 }
                 htmlAcciones += `</div>`;
 
                 tr.innerHTML = `
-                    <td class="p-3 font-bold text-slate-100">
-                        <div>${doc.remitente}</div>
+                    <td class="p-3 font-bold text-[#111b21]">
+                        <div>${escaparHTML(item.remitente || '')}</div>
                         ${infoAutor}
                     </td>
-                    <td class="p-3 text-slate-300">${doc.contenido}</td>
-                    <td class="p-3 text-slate-300 whitespace-nowrap">${doc.fecha}</td>
+                    <td class="p-3 text-[#111b21]">${escaparHTML(item.contenido || '')}</td>
+                    <td class="p-3 text-[#54656f] font-medium whitespace-nowrap">${escaparHTML(item.fecha || '')}</td>
                     <td class="p-3">${htmlComentarios}</td>
                     <td class="p-3 text-center">${htmlAcciones}</td>
                 `;
