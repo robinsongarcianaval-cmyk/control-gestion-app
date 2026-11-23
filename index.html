@@ -91,13 +91,16 @@
         <!-- VISTA 2: PANEL DE CONTROL Y PESTAÑAS -->
         <section id="dashboard-section" class="hidden space-y-5">
 
-            <!-- Notificación de Actualizaciones para Jefe, Subdireccion y Direccion -->
-            <div id="notification-banner" class="hidden bg-[#e7fce3] border border-[#00a884]/50 text-[#005c4b] p-3.5 rounded-xl text-sm flex items-center justify-between shadow-sm gap-3">
+            <!-- Notificación de Actualizaciones para Jefe, Subdireccion y Direccion (cualquier pestaña) -->
+            <div id="notification-banner" class="hidden bg-[#e7fce3] border border-[#00a884]/50 text-[#005c4b] p-3.5 rounded-xl text-sm flex flex-col sm:flex-row sm:items-center justify-between shadow-sm gap-3">
                 <div class="flex items-center space-x-2.5">
                     <span class="animate-pulse h-3 w-3 rounded-full bg-[#00a884] shrink-0"></span>
                     <span id="notification-text" class="font-semibold">Hay nuevos registros agregados en el sistema desde su última revisión.</span>
                 </div>
-                <button type="button" onclick="marcarVisto()" class="text-xs bg-[#008069] hover:bg-[#017561] text-white px-3.5 py-1.5 rounded-lg font-bold transition shadow-sm shrink-0">Aceptar</button>
+                <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                    <button type="button" id="btn-ir-pestana-notif" onclick="irAPestanaNotificada()" class="hidden text-xs bg-white hover:bg-[#d9fdd3] text-[#005c4b] border border-[#008069]/40 px-3 py-1.5 rounded-lg font-bold transition">Ir a pestaña</button>
+                    <button type="button" onclick="marcarVisto()" class="text-xs bg-[#008069] hover:bg-[#017561] text-white px-3.5 py-1.5 rounded-lg font-bold transition shadow-sm">Aceptar</button>
+                </div>
             </div>
 
             <!-- NAVEGACIÓN POR PESTAÑAS -->
@@ -247,6 +250,42 @@
         </div>
     </div>
 
+    <!-- Modal de Edición de Documento (Solo para el autor del registro) -->
+    <div id="edit-doc-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-[1px] flex items-center justify-center p-4 no-print">
+        <div class="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                <div>
+                    <h4 class="text-sm font-bold text-[#008069]">Editar Documento Cargado</h4>
+                    <p class="text-xs text-[#54656f]">Solo disponible para quien cargó este registro</p>
+                </div>
+                <button type="button" onclick="cerrarModalEdicion()" class="text-xs text-[#54656f] hover:text-[#111b21] bg-[#f0f2f5] border border-slate-300 px-2.5 py-1 rounded-lg font-semibold">Cerrar</button>
+            </div>
+
+            <form id="edit-doc-form" onsubmit="guardarEdicionDocumento(event)" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label for="edit-remitente" class="block text-xs uppercase font-bold text-[#54656f] mb-1">Remitente</label>
+                    <input type="text" id="edit-remitente" required class="w-full bg-[#f0f2f5] border border-slate-300 rounded-lg p-2 text-sm text-[#111b21] focus:outline-none focus:bg-white focus:border-[#008069]">
+                </div>
+                <div>
+                    <label for="edit-contenido" class="block text-xs uppercase font-bold text-[#54656f] mb-1">Contenido</label>
+                    <input type="text" id="edit-contenido" required class="w-full bg-[#f0f2f5] border border-slate-300 rounded-lg p-2 text-sm text-[#111b21] focus:outline-none focus:bg-white focus:border-[#008069]">
+                </div>
+                <div>
+                    <label for="edit-fecha" class="block text-xs uppercase font-bold text-[#54656f] mb-1">Fecha (DD/MM/AAAA)</label>
+                    <input type="text" id="edit-fecha" required placeholder="DD/MM/AAAA" maxlength="10" oninput="formatearInputFecha(this)" class="w-full bg-[#f0f2f5] border border-slate-300 rounded-lg p-2 text-sm text-[#111b21] focus:outline-none focus:bg-white focus:border-[#008069]">
+                </div>
+                <div>
+                    <label for="edit-observacion" class="block text-xs uppercase font-bold text-[#54656f] mb-1">Observación</label>
+                    <input type="text" id="edit-observacion" required class="w-full bg-[#f0f2f5] border border-slate-300 rounded-lg p-2 text-sm text-[#111b21] focus:outline-none focus:bg-white focus:border-[#008069]">
+                </div>
+                <div class="md:col-span-2 flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="cerrarModalEdicion()" class="bg-[#f0f2f5] hover:bg-slate-200 text-[#111b21] border border-slate-300 px-4 py-2 rounded-lg text-xs font-semibold">Cancelar</button>
+                    <button type="submit" id="btn-guardar-edicion" class="bg-[#008069] hover:bg-[#017561] text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal de Comentario de Seguimiento -->
     <div id="comment-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-[1px] flex items-center justify-center p-4 no-print">
         <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
@@ -322,8 +361,10 @@
         let temporizadorInactividad = null;
         let audioCtx = null;
         let docIdComentarioPendiente = null;
+        let docIdEdicionPendiente = null;
         let snapshotInicialCargado = false;
         let idsNotificados = new Set();
+        let categoriaUltimaNotificacion = null;
 
         function escaparHTML(valor) {
             return String(valor ?? '')
@@ -332,6 +373,18 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
+        }
+
+        function obtenerNombrePestana(categoria) {
+            return NOMBRES_CATEGORIAS[categoria] || NOMBRES_CATEGORIAS['enviar_mppd'];
+        }
+
+        function esAutorDelDocumento(item, usuario) {
+            if (!item || !usuario) return false;
+            if (item.creadoPorId) {
+                return item.creadoPorId === usuario.id;
+            }
+            return normalizarTextoSinAcentos(item.creadoPor) === normalizarTextoSinAcentos(usuario.name);
         }
 
         async function hashSHA256(texto) {
@@ -472,9 +525,9 @@
                 return;
             }
 
-            const categoriaLabel = NOMBRES_CATEGORIAS[item.categoria] || 'Control de Gestión';
-            const titulo = `Nuevo documento • ${categoriaLabel}`;
-            const cuerpo = `${item.remitente || 'Remitente'} — ${item.contenido || 'Sin asunto'}`;
+            const categoriaLabel = obtenerNombrePestana(item.categoria);
+            const titulo = `Nuevo documento en «${categoriaLabel}»`;
+            const cuerpo = `Pestaña: ${categoriaLabel} • ${item.remitente || 'Remitente'} — ${item.contenido || 'Sin asunto'}`;
 
             try {
                 if ('serviceWorker' in navigator) {
@@ -676,6 +729,12 @@
             pestanaActual = categoria;
             actualizarEstilosPestanas();
             renderizarDocumentos();
+        };
+
+        window.irAPestanaNotificada = function() {
+            if (categoriaUltimaNotificacion && NOMBRES_CATEGORIAS[categoriaUltimaNotificacion]) {
+                window.cambiarPestana(categoriaUltimaNotificacion);
+            }
         };
 
         window.actualizarFiltros = function() {
@@ -907,6 +966,7 @@
             }
             snapshotInicialCargado = false;
             idsNotificados.clear();
+            categoriaUltimaNotificacion = null;
             currentUser = null;
             localStorage.removeItem('mppd_user');
             if (navigator.clearAppBadge) {
@@ -982,13 +1042,17 @@
 
                 if (agregadosEnSnapshot.length > 0) {
                     const ultimoNuevo = agregadosEnSnapshot[0];
+                    const catClave = NOMBRES_CATEGORIAS[ultimoNuevo.categoria] ? ultimoNuevo.categoria : 'enviar_mppd';
+                    const nombrePestana = obtenerNombrePestana(catClave);
+                    categoriaUltimaNotificacion = catClave;
+
                     const textoBanner = document.getElementById('notification-text');
                     if (textoBanner) {
                         textoBanner.innerText = agregadosEnSnapshot.length === 1
-                            ? `Nuevo documento de ${ultimoNuevo.remitente || 'un remitente'} agregado en "${NOMBRES_CATEGORIAS[ultimoNuevo.categoria] || 'Control de Gestión'}".`
-                            : `Se agregaron ${agregadosEnSnapshot.length} nuevos documentos en el sistema.`;
+                            ? `Nuevo documento de ${ultimoNuevo.remitente || 'un remitente'} cargado en la pestaña «${nombrePestana}».`
+                            : `Se cargaron ${agregadosEnSnapshot.length} nuevos documentos en el sistema (último en «${nombrePestana}»).`;
                     }
-                    dispararNotificacionFlotante(ultimoNuevo);
+                    dispararNotificacionFlotante({ ...ultimoNuevo, categoria: catClave });
                 }
             }, (error) => {
                 console.error("Error conectando a Firestore:", error);
@@ -1023,19 +1087,35 @@
 
         function verificarNotificaciones() {
             const banner = document.getElementById('notification-banner');
+            const btnIr = document.getElementById('btn-ir-pestana-notif');
             if (currentUser && recibeNotificaciones(currentUser)) {
                 const ultimaVez = ultimaRevision[currentUser.id] || 0;
                 const nuevosItems = documentos.filter(item => (item.timestamp || 0) > ultimaVez);
                 if (nuevosItems.length > 0) {
+                    const masReciente = nuevosItems[0];
+                    const catClave = NOMBRES_CATEGORIAS[masReciente.categoria] ? masReciente.categoria : 'enviar_mppd';
+                    const nombrePestana = obtenerNombrePestana(catClave);
+                    categoriaUltimaNotificacion = catClave;
+
                     const textoBanner = document.getElementById('notification-text');
                     if (textoBanner) {
-                        textoBanner.innerText = `Hay ${nuevosItems.length} ${nuevosItems.length === 1 ? 'nuevo documento agregado' : 'nuevos documentos agregados'} desde su última revisión.`;
+                        textoBanner.innerText = nuevosItems.length === 1
+                            ? `Nuevo documento agregado en la pestaña «${nombrePestana}» (${masReciente.remitente || 'Sin remitente'}).`
+                            : `Hay ${nuevosItems.length} nuevos documentos agregados en distintas pestañas (último en «${nombrePestana}»).`;
+                    }
+                    if (btnIr) {
+                        btnIr.innerText = `Ir a «${nombrePestana}»`;
+                        btnIr.classList.remove('hidden');
                     }
                     banner.classList.remove('hidden');
                 } else {
+                    categoriaUltimaNotificacion = null;
+                    if (btnIr) btnIr.classList.add('hidden');
                     banner.classList.add('hidden');
                 }
             } else {
+                categoriaUltimaNotificacion = null;
+                if (btnIr) btnIr.classList.add('hidden');
                 banner.classList.add('hidden');
             }
         }
@@ -1044,6 +1124,9 @@
             if (!currentUser) return;
             ultimaRevision[currentUser.id] = Date.now();
             localStorage.setItem('mppd_ult_revision', JSON.stringify(ultimaRevision));
+            categoriaUltimaNotificacion = null;
+            const btnIr = document.getElementById('btn-ir-pestana-notif');
+            if (btnIr) btnIr.classList.add('hidden');
             document.getElementById('notification-banner').classList.add('hidden');
             actualizarBadgeAppYHeader();
         };
@@ -1100,6 +1183,7 @@
                     fecha: fechaTexto,
                     observacion,
                     creadoPor: currentUser.name,
+                    creadoPorId: currentUser.id,
                     creadoEl: new Date().toLocaleString(),
                     comentarios: []
                 });
@@ -1110,6 +1194,79 @@
             } finally {
                 btn.disabled = false;
                 btn.innerText = "Guardar en la Nube";
+            }
+        };
+
+        window.abrirModalEdicion = function(firestoreId) {
+            if (!currentUser) return;
+            const item = documentos.find(d => d.firestoreId === firestoreId);
+            if (!item) return;
+
+            if (!esAutorDelDocumento(item, currentUser)) {
+                alert("Solo la persona que cargó este documento puede editarlo.");
+                return;
+            }
+
+            docIdEdicionPendiente = firestoreId;
+            document.getElementById('edit-remitente').value = item.remitente || '';
+            document.getElementById('edit-contenido').value = item.contenido || '';
+            document.getElementById('edit-fecha').value = item.fecha || '';
+            document.getElementById('edit-observacion').value = item.observacion || '';
+            document.getElementById('edit-doc-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('edit-remitente')?.focus(), 50);
+        };
+
+        window.cerrarModalEdicion = function() {
+            docIdEdicionPendiente = null;
+            document.getElementById('edit-doc-modal').classList.add('hidden');
+        };
+
+        window.guardarEdicionDocumento = async function(e) {
+            e.preventDefault();
+            if (!docIdEdicionPendiente || !currentUser) return;
+
+            const item = documentos.find(d => d.firestoreId === docIdEdicionPendiente);
+            if (!item || !esAutorDelDocumento(item, currentUser)) {
+                alert("No tiene permiso para editar este registro.");
+                cerrarModalEdicion();
+                return;
+            }
+
+            const remitente = document.getElementById('edit-remitente').value.trim();
+            const contenido = document.getElementById('edit-contenido').value.trim();
+            const fechaTexto = document.getElementById('edit-fecha').value.trim();
+            const observacion = document.getElementById('edit-observacion').value.trim();
+
+            if (!remitente || !contenido || !observacion) {
+                alert("Complete todos los campos obligatorios.");
+                return;
+            }
+            if (!esFechaValidaDDMMAAAA(fechaTexto)) {
+                alert("Ingrese una fecha válida en formato DD/MM/AAAA.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-guardar-edicion');
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
+
+            try {
+                const docRef = doc(db, "documentos_mppd", docIdEdicionPendiente);
+                await updateDoc(docRef, {
+                    remitente,
+                    contenido,
+                    fecha: fechaTexto,
+                    observacion,
+                    editadoPor: currentUser.name,
+                    editadoEl: new Date().toLocaleString()
+                });
+                cerrarModalEdicion();
+            } catch (error) {
+                alert("No se pudieron guardar los cambios.");
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Guardar Cambios";
             }
         };
 
@@ -1332,9 +1489,13 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-[#f0f2f5]/70 transition";
 
-                const infoAutor = item.creadoPor
-                    ? `<div class="text-[10px] text-[#54656f] font-normal mt-0.5">Cargado por: ${escaparHTML(item.creadoPor)}${item.creadoEl ? ` • ${escaparHTML(item.creadoEl)}` : ''}</div>`
+                const infoEdicion = item.editadoEl
+                    ? `<div class="text-[10px] text-[#008069] font-normal mt-0.5">Editado: ${escaparHTML(item.editadoEl)}</div>`
                     : '';
+
+                const infoAutor = item.creadoPor
+                    ? `<div class="text-[10px] text-[#54656f] font-normal mt-0.5">Cargado por: ${escaparHTML(item.creadoPor)}${item.creadoEl ? ` • ${escaparHTML(item.creadoEl)}` : ''}</div>${infoEdicion}`
+                    : infoEdicion;
 
                 let htmlComentarios = `<div class="text-xs text-[#111b21]">${escaparHTML(item.observacion || '')}</div>`;
                 if (Array.isArray(item.comentarios) && item.comentarios.length > 0) {
@@ -1349,6 +1510,10 @@
                 }
 
                 let htmlAcciones = `<div class="flex items-center justify-center space-x-2 flex-wrap gap-1.5">`;
+
+                if (esAutorDelDocumento(item, currentUser)) {
+                    htmlAcciones += `<button type="button" onclick="abrirModalEdicion('${escaparHTML(item.firestoreId)}')" class="bg-[#f0f2f5] hover:bg-[#e7fce3] text-[#008069] border border-[#008069]/35 px-3 py-1.5 text-xs font-bold rounded-lg transition">Editar</button>`;
+                }
 
                 if (currentUser.role === 'jefe' || currentUser.role === 'superior') {
                     htmlAcciones += `<button type="button" onclick="agregarComentario('${escaparHTML(item.firestoreId)}')" class="bg-[#e7fce3] hover:bg-[#d9fdd3] text-[#005c4b] border border-[#00a884]/40 px-3 py-1.5 text-xs font-bold rounded-lg transition">Comentar</button>`;
